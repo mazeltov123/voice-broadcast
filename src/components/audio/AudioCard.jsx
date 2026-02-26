@@ -10,14 +10,20 @@ export default function AudioCard({ audio, onDelete }) {
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(audio.duration_seconds || 0);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!audioRef.current) return;
     if (playing) {
       audioRef.current.pause();
+      setPlaying(false);
     } else {
-      audioRef.current.play();
+      try {
+        await audioRef.current.play();
+        setPlaying(true);
+      } catch (error) {
+        console.error('Audio playback failed:', error);
+        setPlaying(false);
+      }
     }
-    setPlaying(!playing);
   };
 
   const formatBadge = {
@@ -73,6 +79,7 @@ export default function AudioCard({ audio, onDelete }) {
           ref={audioRef}
           src={audio.file_url}
           onEnded={() => setPlaying(false)}
+          onError={() => setPlaying(false)}
           onLoadedMetadata={() => {
             if (audioRef.current) setDuration(Math.round(audioRef.current.duration));
           }}
