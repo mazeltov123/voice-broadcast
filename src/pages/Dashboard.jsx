@@ -4,6 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Users, Radio, Music, PhoneIncoming, Megaphone } from "lucide-react";
 import StatCard from "@/components/dashboard/StatCard";
 import RecentActivity from "@/components/dashboard/RecentActivity";
+import BroadcastAnalytics from "@/components/dashboard/BroadcastAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Dashboard() {
@@ -109,6 +110,15 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Analytics Section */}
+      <div className="pt-4">
+        <div className="mb-4">
+          <h2 className="text-xl font-bold tracking-tight">Broadcast Analytics</h2>
+          <p className="text-sm text-muted-foreground mt-1">Performance metrics and campaign insights</p>
+        </div>
+        <BroadcastAnalytics broadcasts={broadcasts} inboundMessages={inbound} />
       </div>
     </div>
   );
