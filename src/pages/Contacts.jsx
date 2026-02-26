@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -69,26 +70,39 @@ export default function Contacts() {
   const handleImportCSV = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const { file_url } = await base44.integrations.Core.UploadFile({ file });
-    const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
-      file_url,
-      json_schema: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            first_name: { type: "string" },
-            last_name: { type: "string" },
-            phone_number: { type: "string" },
-            email: { type: "string" },
+    
+    const loadingToast = toast.loading("Importing contacts...");
+    
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const result = await base44.integrations.Core.ExtractDataFromUploadedFile({
+        file_url,
+        json_schema: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              first_name: { type: "string" },
+              last_name: { type: "string" },
+              phone_number: { type: "string" },
+              email: { type: "string" },
+            },
           },
         },
-      },
-    });
-    if (result.status === "success" && Array.isArray(result.output)) {
-      await base44.entities.Contact.bulkCreate(result.output.map(c => ({ ...c, status: "active", groups: [] })));
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
+      });
+      
+      if (result.status === "success" && Array.isArray(result.output)) {
+        await base44.entities.Contact.bulkCreate(result.output.map(c => ({ ...c, status: "active", groups: [] })));
+        queryClient.invalidateQueries({ queryKey: ["contacts"] });
+        toast.success(`Successfully imported ${result.output.length} contacts`, { id: loadingToast });
+      } else {
+        toast.error(result.details || "Failed to import contacts", { id: loadingToast });
+      }
+    } catch (error) {
+      toast.error("Failed to import contacts. Please check your file format.", { id: loadingToast });
     }
+    
+    e.target.value = "";
   };
 
   const filtered = contacts.filter(c => {

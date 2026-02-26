@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { Toaster } from "react-hot-toast";
 import {
   LayoutDashboard,
   Users,
@@ -117,6 +118,8 @@ export default function Layout({ children, currentPageName }) {
           {children}
         </div>
       </main>
+      
+      <Toaster position="top-right" />
     </div>
   );
 }
