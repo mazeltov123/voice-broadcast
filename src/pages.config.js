@@ -52,6 +52,7 @@ import Broadcasts from './pages/Broadcasts';
 import Contacts from './pages/Contacts';
 import Dashboard from './pages/Dashboard';
 import MessageBoard from './pages/MessageBoard';
+import CallReport from './pages/CallReport';
 import __Layout from './Layout.jsx';
 
 
@@ -61,6 +62,7 @@ export const PAGES = {
     "Contacts": Contacts,
     "Dashboard": Dashboard,
     "MessageBoard": MessageBoard,
+    "CallReport": CallReport,
 }
 
 export const pagesConfig = {
