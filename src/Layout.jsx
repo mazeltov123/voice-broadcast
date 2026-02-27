@@ -10,7 +10,8 @@ import {
   PhoneIncoming,
   Menu,
   X,
-  Megaphone
+  Megaphone,
+  FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
