@@ -82,19 +82,30 @@ export default function Contacts() {
           items: {
             type: "object",
             properties: {
-              first_name: { type: "string" },
               last_name: { type: "string" },
-              phone_number: { type: "string" },
-              email: { type: "string" },
+              first_name: { type: "string" },
+              phone1: { type: "string" },
+              phone2: { type: "string" },
+              phone3: { type: "string" },
             },
           },
         },
       });
       
       if (result.status === "success" && Array.isArray(result.output)) {
-        await base44.entities.Contact.bulkCreate(result.output.map(c => ({ ...c, status: "active", groups: [] })));
+        // Each row with multiple phones becomes multiple contacts
+        const contacts = [];
+        for (const c of result.output) {
+          const base = { first_name: c.first_name || "", last_name: c.last_name || "", status: "active", groups: [] };
+          if (c.phone1) contacts.push({ ...base, phone_number: c.phone1 });
+          if (c.phone2) contacts.push({ ...base, phone_number: c.phone2 });
+          if (c.phone3) contacts.push({ ...base, phone_number: c.phone3 });
+          // fallback if no phone columns matched
+          if (!c.phone1 && !c.phone2 && !c.phone3) contacts.push({ ...base, phone_number: "" });
+        }
+        await base44.entities.Contact.bulkCreate(contacts);
         queryClient.invalidateQueries({ queryKey: ["contacts"] });
-        toast.success(`Successfully imported ${result.output.length} contacts`, { id: loadingToast });
+        toast.success(`Successfully imported ${contacts.length} contacts`, { id: loadingToast });
       } else {
         toast.error(result.details || "Failed to import contacts", { id: loadingToast });
       }

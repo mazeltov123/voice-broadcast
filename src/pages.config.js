@@ -49,20 +49,20 @@
  */
 import AudioLibrary from './pages/AudioLibrary';
 import Broadcasts from './pages/Broadcasts';
+import CallReport from './pages/CallReport';
 import Contacts from './pages/Contacts';
 import Dashboard from './pages/Dashboard';
 import MessageBoard from './pages/MessageBoard';
-import CallReport from './pages/CallReport';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AudioLibrary": AudioLibrary,
     "Broadcasts": Broadcasts,
+    "CallReport": CallReport,
     "Contacts": Contacts,
     "Dashboard": Dashboard,
     "MessageBoard": MessageBoard,
-    "CallReport": CallReport,
 }
 
 export const pagesConfig = {
