@@ -18,9 +18,9 @@ Deno.serve(async (req) => {
   let inner = '';
 
   if (broadcasts.length === 0) {
-    inner = `  <Say voice="Polly.Joanna">There are no broadcasts available from the past year. Goodbye.</Say>\n  <Hangup/>`;
+    inner = `  <Say>There are no broadcasts available from the past year. Goodbye.</Say>\n  <Hangup/>`;
   } else {
-    inner += `  <Say voice="Polly.Joanna">You have ${broadcasts.length} broadcast${broadcasts.length !== 1 ? 's' : ''} from the past year. Playing most recent first.</Say>\n`;
+    inner += `  <Say>You have ${broadcasts.length} broadcast${broadcasts.length !== 1 ? 's' : ''} from the past year. Playing most recent first.</Say>\n`;
 
     for (const broadcast of broadcasts) {
       const date = new Date(broadcast.scheduled_at || broadcast.created_date);
@@ -29,24 +29,24 @@ Deno.serve(async (req) => {
         hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
       });
 
-      inner += `  <Say voice="Polly.Joanna">Broadcast from ${dateStr}.</Say>\n`;
+      inner += `  <Say>Broadcast from ${dateStr}.</Say>\n`;
 
       const audioFile = audioMap[broadcast.audio_file_id];
       if (audioFile?.file_url) {
         inner += `  <Play>${audioFile.file_url}</Play>\n`;
       } else {
-        inner += `  <Say voice="Polly.Joanna">Audio is not available for this broadcast.</Say>\n`;
+        inner += `  <Say>Audio is not available for this broadcast.</Say>\n`;
       }
 
       inner += `  <Pause length="1"/>\n`;
     }
 
-    inner += `  <Say voice="Polly.Joanna">You have reached the end of all broadcasts. Goodbye.</Say>\n  <Hangup/>`;
+    inner += `  <Say>You have reached the end of all broadcasts. Goodbye.</Say>\n  <Hangup/>`;
   }
 
-  const twiml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n${inner}\n</Response>`;
+  const texml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n${inner}\n</Response>`;
 
-  return new Response(twiml, {
+  return new Response(texml, {
     headers: { 'Content-Type': 'text/xml' }
   });
 });
