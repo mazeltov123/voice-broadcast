@@ -25,6 +25,7 @@ import {
 
 export default function Contacts() {
   const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
   const [search, setSearch] = useState("");
   const [contactDialog, setContactDialog] = useState(false);
   const [groupDialog, setGroupDialog] = useState(false);
@@ -34,13 +35,20 @@ export default function Contacts() {
   const [filterGroup, setFilterGroup] = useState("all");
   const [importDialog, setImportDialog] = useState(false);
 
+  const isAdmin = currentUser?.role === "admin";
   const { data: contacts = [], isLoading } = useQuery({
-    queryKey: ["contacts"],
-    queryFn: () => base44.entities.Contact.list(),
+    queryKey: ["contacts", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.Contact.list()
+      : base44.entities.Contact.filter({ created_by: currentUser?.email }),
+    enabled: !!currentUser,
   });
   const { data: groups = [] } = useQuery({
-    queryKey: ["groups"],
-    queryFn: () => base44.entities.ContactGroup.list(),
+    queryKey: ["groups", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.ContactGroup.list()
+      : base44.entities.ContactGroup.filter({ created_by: currentUser?.email }),
+    enabled: !!currentUser,
   });
 
   const createContact = useMutation({
