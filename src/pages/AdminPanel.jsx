@@ -30,6 +30,7 @@ export default function AdminPanel() {
   const { data: currentUser } = useCurrentUser();
   const [inviteDialog, setInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [emailList, setEmailList] = useState([]);
   const [inviting, setInviting] = useState(false);
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
