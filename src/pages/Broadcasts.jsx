@@ -111,6 +111,12 @@ export default function Broadcasts() {
         </div>
       )}
 
+      <BroadcastReportDialog
+        broadcast={reportBroadcast}
+        open={!!reportBroadcast}
+        onOpenChange={(v) => { if (!v) setReportBroadcast(null); }}
+      />
+
       <BroadcastFormDialog
         open={createDialog}
         onOpenChange={setCreateDialog}
