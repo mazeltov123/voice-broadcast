@@ -53,6 +53,7 @@ import CallReport from './pages/CallReport';
 import Contacts from './pages/Contacts';
 import Dashboard from './pages/Dashboard';
 import MessageBoard from './pages/MessageBoard';
+import AdminPanel from './pages/AdminPanel';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "Contacts": Contacts,
     "Dashboard": Dashboard,
     "MessageBoard": MessageBoard,
+    "AdminPanel": AdminPanel,
 }
 
 export const pagesConfig = {
