@@ -22,26 +22,37 @@ import {
 
 export default function Broadcasts() {
   const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
   const [createDialog, setCreateDialog] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [reportBroadcast, setReportBroadcast] = useState(null);
   const [tab, setTab] = useState("all");
 
   const { data: broadcasts = [], isLoading } = useQuery({
-    queryKey: ["broadcasts"],
-    queryFn: () => base44.entities.Broadcast.list("-created_date"),
+    queryKey: ["broadcasts", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.Broadcast.list("-created_date")
+      : base44.entities.Broadcast.filter({ created_by: currentUser?.email }, "-created_date"),
+    enabled: !!currentUser,
   });
   const { data: audioFiles = [] } = useQuery({
     queryKey: ["audioFiles"],
     queryFn: () => base44.entities.AudioFile.list(),
   });
   const { data: groups = [] } = useQuery({
-    queryKey: ["groups"],
-    queryFn: () => base44.entities.ContactGroup.list(),
+    queryKey: ["groups", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.ContactGroup.list()
+      : base44.entities.ContactGroup.filter({ created_by: currentUser?.email }),
+    enabled: !!currentUser,
   });
   const { data: contacts = [] } = useQuery({
-    queryKey: ["contacts"],
-    queryFn: () => base44.entities.Contact.list(),
+    queryKey: ["contacts", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.Contact.list()
+      : base44.entities.Contact.filter({ created_by: currentUser?.email }),
+    enabled: !!currentUser,
   });
 
   const createBroadcast = useMutation({
