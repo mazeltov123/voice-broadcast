@@ -47,24 +47,24 @@
  *
  * The mainPage value must match a key in the PAGES object exactly.
  */
+import AdminPanel from './pages/AdminPanel';
 import AudioLibrary from './pages/AudioLibrary';
 import Broadcasts from './pages/Broadcasts';
 import CallReport from './pages/CallReport';
 import Contacts from './pages/Contacts';
 import Dashboard from './pages/Dashboard';
 import MessageBoard from './pages/MessageBoard';
-import AdminPanel from './pages/AdminPanel';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
+    "AdminPanel": AdminPanel,
     "AudioLibrary": AudioLibrary,
     "Broadcasts": Broadcasts,
     "CallReport": CallReport,
     "Contacts": Contacts,
     "Dashboard": Dashboard,
     "MessageBoard": MessageBoard,
-    "AdminPanel": AdminPanel,
 }
 
 export const pagesConfig = {
