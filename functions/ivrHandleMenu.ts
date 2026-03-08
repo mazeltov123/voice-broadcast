@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
 
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="alice">Invalid selection. Goodbye.</Say>
+  <Say voice="Polly.Joanna">Invalid selection. Goodbye.</Say>
   <Hangup/>
 </Response>`;
   return new Response(twiml, { headers: { 'Content-Type': 'text/xml' } });
