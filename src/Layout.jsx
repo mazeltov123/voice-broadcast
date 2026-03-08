@@ -145,6 +145,26 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               );
             })}
+            {isAdmin && (
+              <Link
+                to={createPageUrl("AdminPanel")}
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  currentPageName === "AdminPanel"
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                <ShieldCheck className="h-4.5 w-4.5" />
+                Admin Panel
+              </Link>
+            )}
+            <button
+              onClick={() => base44.auth.logout()}
+              className="flex w-full items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+            >
+              <LogOut className="h-4.5 w-4.5" /> Sign out
+            </button>
           </div>
         </div>
       )}
