@@ -193,31 +193,47 @@ export default function AdminPanel() {
       </Card>
 
       {/* Invite dialog */}
-      <Dialog open={inviteDialog} onOpenChange={setInviteDialog}>
+      <Dialog open={inviteDialog} onOpenChange={(open) => { setInviteDialog(open); if (!open) { setEmailList([]); setInviteEmail(""); } }}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Invite User</DialogTitle>
+            <DialogTitle>Invite Users</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1">
               <Label>Email Address</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  className="pl-9"
-                  placeholder="user@example.com"
-                  type="email"
-                  value={inviteEmail}
-                  onChange={e => setInviteEmail(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleInvite()}
-                />
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    className="pl-9"
+                    placeholder="user@example.com"
+                    type="email"
+                    value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addEmail(); } }}
+                  />
+                </div>
+                <Button type="button" variant="outline" onClick={addEmail} disabled={!inviteEmail.trim()}>Add</Button>
               </div>
             </div>
+            {emailList.length > 0 && (
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Queue ({emailList.length})</Label>
+                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                  {emailList.map(email => (
+                    <span key={email} className="inline-flex items-center gap-1 bg-muted text-xs rounded-md px-2 py-1">
+                      {email}
+                      <button onClick={() => removeEmail(email)} className="text-muted-foreground hover:text-foreground ml-1">✕</button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setInviteDialog(false)}>Cancel</Button>
-            <Button onClick={handleInvite} disabled={!inviteEmail || inviting}>
-              {inviting ? "Sending..." : "Send Invite"}
+            <Button onClick={handleInvite} disabled={(!inviteEmail.trim() && emailList.length === 0) || inviting}>
+              {inviting ? "Sending..." : `Send Invite${emailList.length > 1 ? "s" : ""}`}
             </Button>
           </DialogFooter>
         </DialogContent>
