@@ -23,6 +23,7 @@ export default function Broadcasts() {
   const queryClient = useQueryClient();
   const [createDialog, setCreateDialog] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [reportBroadcast, setReportBroadcast] = useState(null);
   const [tab, setTab] = useState("all");
 
   const { data: broadcasts = [], isLoading } = useQuery({
@@ -104,6 +105,7 @@ export default function Broadcasts() {
               onStart={handleStart}
               onCancel={handleCancel}
               onDelete={setDeleteTarget}
+              onViewReport={setReportBroadcast}
             />
           ))}
         </div>
