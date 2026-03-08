@@ -68,17 +68,33 @@ export default function AdminPanel() {
     );
   }
 
+  const addEmail = () => {
+    const trimmed = inviteEmail.trim();
+    if (!trimmed || emailList.includes(trimmed)) return;
+    setEmailList(prev => [...prev, trimmed]);
+    setInviteEmail("");
+  };
+
+  const removeEmail = (email) => setEmailList(prev => prev.filter(e => e !== email));
+
   const handleInvite = async () => {
-    if (!inviteEmail) return;
+    const toInvite = emailList.length > 0 ? emailList : inviteEmail.trim() ? [inviteEmail.trim()] : [];
+    if (toInvite.length === 0) return;
     setInviting(true);
-    try {
-      await base44.users.inviteUser(inviteEmail, "user");
-      toast.success(`Invitation sent to ${inviteEmail}`);
-      setInviteEmail("");
-      setInviteDialog(false);
-    } catch (e) {
-      toast.error("Failed to send invitation");
+    let success = 0, failed = 0;
+    for (const email of toInvite) {
+      try {
+        await base44.users.inviteUser(email, "user");
+        success++;
+      } catch {
+        failed++;
+      }
     }
+    if (success > 0) toast.success(`Invitation${success > 1 ? "s" : ""} sent to ${success} user${success > 1 ? "s" : ""}`);
+    if (failed > 0) toast.error(`Failed to send ${failed} invitation${failed > 1 ? "s" : ""}`);
+    setEmailList([]);
+    setInviteEmail("");
+    setInviteDialog(false);
     setInviting(false);
   };
 
