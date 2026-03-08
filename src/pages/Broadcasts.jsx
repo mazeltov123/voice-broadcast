@@ -6,6 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Plus, Radio } from "lucide-react";
 import BroadcastFormDialog from "@/components/broadcasts/BroadcastFormDialog";
 import BroadcastCard from "@/components/broadcasts/BroadcastCard";
+import BroadcastReportDialog from "@/components/broadcasts/BroadcastReportDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   AlertDialog,

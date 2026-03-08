@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Play, Pause, Trash2, Music, Users, Clock, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
+import { Play, Pause, Trash2, Music, Users, Clock, CheckCircle2, XCircle, BarChart2 } from "lucide-react";
 import { format } from "date-fns";
 
 const statusConfig = {
