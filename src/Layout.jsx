@@ -11,9 +11,13 @@ import {
   Menu,
   X,
   Megaphone,
-  FileText
+  FileText,
+  ShieldCheck,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCurrentUser } from "@/components/useCurrentUser";
+import { base44 } from "@/api/base44Client";
 
 const navItems = [
   { name: "Dashboard", icon: LayoutDashboard, page: "Dashboard" },
