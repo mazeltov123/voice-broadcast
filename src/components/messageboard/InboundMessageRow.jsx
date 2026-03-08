@@ -28,7 +28,10 @@ export default function InboundMessageRow({ message, onStatusChange, onPlay }) {
           {message.caller_name && <span>{message.caller_phone}</span>}
           {message.duration_seconds > 0 && (
             <span className="flex items-center gap-0.5">
-              <Clock className="h-2.5 w-2.5" /> {message.duration_seconds}s
+              <Clock className="h-2.5 w-2.5" />
+              {message.duration_seconds >= 60
+                ? `${Math.floor(message.duration_seconds / 60)}m ${message.duration_seconds % 60}s`
+                : `${message.duration_seconds}s`}
             </span>
           )}
           {message.broadcast_name && <span>Re: {message.broadcast_name}</span>}
