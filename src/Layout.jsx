@@ -67,13 +67,42 @@ export default function Layout({ children, currentPageName }) {
             );
           })}
         </nav>
+        {isAdmin && (
+          <div className="px-4 pb-2">
+            <Link
+              to={createPageUrl("AdminPanel")}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                currentPageName === "AdminPanel"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <ShieldCheck className="h-4.5 w-4.5" />
+              Admin Panel
+            </Link>
+          </div>
+        )}
         <div className="p-4 border-t border-border">
           <div className="bg-gradient-to-br from-primary/5 to-primary/10 rounded-xl p-4">
+            {currentUser && (
+              <div className="mb-3 pb-3 border-b border-primary/10">
+                <p className="text-xs font-semibold text-foreground truncate">{currentUser.full_name || currentUser.email}</p>
+                <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
+              </div>
+            )}
             <p className="text-xs font-medium text-primary">System Status</p>
             <div className="flex items-center gap-2 mt-2">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs text-muted-foreground">All systems operational</span>
             </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-3 w-full justify-start text-xs text-muted-foreground h-7 px-1"
+              onClick={() => base44.auth.logout()}
+            >
+              <LogOut className="h-3 w-3 mr-2" /> Sign out
+            </Button>
           </div>
         </div>
       </aside>
