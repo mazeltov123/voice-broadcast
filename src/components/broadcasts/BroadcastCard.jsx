@@ -47,8 +47,18 @@ export default function BroadcastCard({ broadcast, onStart, onCancel, onDelete, 
               </Button>
             )}
             {broadcast.status === "in_progress" && (
-              <Button variant="outline" size="sm" className="h-7 text-xs text-amber-600" onClick={() => onCancel(broadcast)}>
-                <Pause className="h-3 w-3 mr-1" /> Cancel
+              <>
+                <Button variant="outline" size="sm" className="h-7 text-xs text-blue-600" onClick={() => onViewReport(broadcast)}>
+                  <BarChart2 className="h-3 w-3 mr-1" /> Live
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 text-xs text-amber-600" onClick={() => onCancel(broadcast)}>
+                  <Pause className="h-3 w-3 mr-1" /> Cancel
+                </Button>
+              </>
+            )}
+            {broadcast.status === "completed" && (
+              <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => onViewReport(broadcast)}>
+                <BarChart2 className="h-3 w-3 mr-1" /> Report
               </Button>
             )}
             {(broadcast.status === "draft" || broadcast.status === "completed" || broadcast.status === "cancelled") && (
