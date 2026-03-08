@@ -57,6 +57,8 @@ function formatDuration(seconds) {
 
 export default function CallReportPage() {
   const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
   const [search, setSearch] = useState("");
   const [filterBroadcast, setFilterBroadcast] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -73,13 +75,19 @@ export default function CallReportPage() {
   });
 
   const { data: reports = [], isLoading } = useQuery({
-    queryKey: ["callReports"],
-    queryFn: () => base44.entities.CallReport.list("-called_at"),
+    queryKey: ["callReports", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.CallReport.list("-called_at")
+      : base44.entities.CallReport.filter({ created_by: currentUser?.email }, "-called_at"),
+    enabled: !!currentUser,
   });
 
   const { data: broadcasts = [] } = useQuery({
-    queryKey: ["broadcasts"],
-    queryFn: () => base44.entities.Broadcast.list(),
+    queryKey: ["broadcasts", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.Broadcast.list()
+      : base44.entities.Broadcast.filter({ created_by: currentUser?.email }),
+    enabled: !!currentUser,
   });
 
   const createMutation = useMutation({
