@@ -1,33 +1,34 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
-
 const TELNYX_API_KEY = Deno.env.get('TELNYX_API_KEY');
-const TELNYX_CONNECTION_ID = Deno.env.get('TELNYX_CONNECTION_ID');
 const TELNYX_FROM_NUMBER = Deno.env.get('TELNYX_FROM_NUMBER');
+const TELNYX_CONNECTION_ID = Deno.env.get('TELNYX_CONNECTION_ID');
 
 Deno.serve(async (req) => {
-  const base44 = createClientFromRequest(req);
+  console.log('=== TEST TELNYX CALL ===');
+  console.log('TELNYX_API_KEY:', TELNYX_API_KEY ? 'SET (' + TELNYX_API_KEY.substring(0, 10) + '...)' : 'MISSING');
+  console.log('TELNYX_FROM_NUMBER:', TELNYX_FROM_NUMBER || 'MISSING');
+  console.log('TELNYX_CONNECTION_ID:', TELNYX_CONNECTION_ID || 'MISSING');
 
-  const user = await base44.auth.me();
-  if (!user) {
-    return Response.json({ error: 'Unauthorized' }, { status: 401 });
+  let toNumber;
+  try {
+    const body = await req.json();
+    toNumber = body.to;
+  } catch {
+    toNumber = null;
   }
 
-  const { to } = await req.json();
-
-  if (!to) {
-    return Response.json({ error: 'Missing required field: to (phone number)' }, { status: 400 });
+  if (!toNumber) {
+    console.log('ERROR: No phone number provided');
+    return Response.json({
+      error: 'Provide a phone number in the payload like: {"to": "+1234567890"}',
+      env_check: {
+        api_key: TELNYX_API_KEY ? 'SET' : 'MISSING',
+        from_number: TELNYX_FROM_NUMBER || 'MISSING',
+        connection_id: TELNYX_CONNECTION_ID || 'MISSING',
+      }
+    });
   }
 
-  const appId = Deno.env.get('BASE44_APP_ID');
-  const webhookUrl = `https://api.base44.com/api/apps/${appId}/functions/callEventHandler`;
-
-  const body = {
-    connection_id: TELNYX_CONNECTION_ID,
-    to,
-    from: TELNYX_FROM_NUMBER,
-    webhook_url: webhookUrl,
-    webhook_url_method: 'POST',
-  };
+  console.log('Calling:', toNumber);
 
   const res = await fetch('https://api.telnyx.com/v2/calls', {
     method: 'POST',
@@ -35,19 +36,20 @@ Deno.serve(async (req) => {
       'Authorization': `Bearer ${TELNYX_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      connection_id: TELNYX_CONNECTION_ID,
+      to: toNumber,
+      from: TELNYX_FROM_NUMBER,
+    }),
   });
 
-  const data = await res.json();
-
-  if (!res.ok) {
-    return Response.json({ success: false, error: data }, { status: res.status });
-  }
+  const responseText = await res.text();
+  console.log('Telnyx status:', res.status);
+  console.log('Telnyx response:', responseText);
 
   return Response.json({
-    success: true,
-    call_control_id: data.data?.call_control_id,
-    call_leg_id: data.data?.call_leg_id,
-    message: `Test call initiated to ${to}`,
+    success: res.ok,
+    status: res.status,
+    telnyx_response: JSON.parse(responseText),
   });
 });
