@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { X, Music, Users, Search } from "lucide-react";
+import { X, Music, Users, Search, Mic } from "lucide-react";
+import VoiceRecorder from "./VoiceRecorder";
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, groups, contacts, onSave }) {
   const [form, setForm] = useState({
