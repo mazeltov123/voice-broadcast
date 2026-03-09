@@ -53,11 +53,7 @@ export default function AudioCard({ audio, onDelete }) {
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        {showPlayer && audio.file_url && (
-          <div className="mt-3">
-            <audio controls autoPlay src={audio.file_url} className="w-full h-8" onEnded={() => setShowPlayer(false)} />
-          </div>
-        )}
+
       </CardContent>
     </Card>
   );
