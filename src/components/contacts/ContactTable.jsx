@@ -61,13 +61,16 @@ export default function ContactTable({ contacts, groups, onEdit, onDelete, selec
         <TableBody>
           {contacts.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-muted-foreground py-12">
+              <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
                 No contacts yet. Add your first contact to get started.
               </TableCell>
             </TableRow>
           ) : (
             contacts.map(contact => (
-              <TableRow key={contact.id} className="hover:bg-muted/20 transition-colors">
+              <TableRow key={contact.id} className={`hover:bg-muted/20 transition-colors ${selectedIds.includes(contact.id) ? 'bg-primary/5' : ''}`}>
+                <TableCell>
+                  <Checkbox checked={selectedIds.includes(contact.id)} onCheckedChange={() => toggleOne(contact.id)} />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-semibold text-primary">
