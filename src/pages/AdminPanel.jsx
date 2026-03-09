@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { useCurrentUser } from "@/components/useCurrentUser";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, ShieldCheck, Radio, Phone, UserPlus, Mail } from "lucide-react";
+import { Users, ShieldCheck, Radio, Phone, UserPlus, Mail, Music, Upload, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 

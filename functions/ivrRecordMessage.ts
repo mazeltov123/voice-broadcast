@@ -24,13 +24,23 @@ Deno.serve(async (req) => {
     return new Response(texml, { headers: { 'Content-Type': 'text/xml' } });
   }
 
-  // Initial prompt
+  // Load announcement MP3
+  const settings = await base44.asServiceRole.entities.IvrSettings.list();
+  const announcementUrl = settings[0]?.record_announcement_url || '';
+
   const appId = Deno.env.get('BASE44_APP_ID');
   const selfUrl = `https://api.base44.app/api/apps/${appId}/functions/ivrRecordMessage`;
 
+  let announcementXml = '';
+  if (announcementUrl) {
+    announcementXml = `<Play>${announcementUrl}</Play>`;
+  } else {
+    announcementXml = `<Say>Please record your message after the tone. Press pound when you are finished.</Say>`;
+  }
+
   const texml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Please record your message after the tone. Press pound when you are finished.</Say>
+  ${announcementXml}
   <Record action="${selfUrl}" method="POST" maxLength="300" finishOnKey="#" playBeep="true"/>
   <Say>We did not receive a recording. Goodbye.</Say>
   <Hangup/>
