@@ -60,6 +60,27 @@ export default function AdminPanel() {
     enabled: currentUser?.role === "admin",
   });
 
+  const { data: ivrSettingsList = [] } = useQuery({
+    queryKey: ["ivrSettings"],
+    queryFn: () => base44.entities.IvrSettings.list(),
+    enabled: currentUser?.role === "admin",
+  });
+  const ivrSettings = ivrSettingsList[0] || {};
+
+  const uploadIvrFile = async (file, field, setUploading) => {
+    setUploading(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    const update = { [field]: file_url };
+    if (ivrSettings.id) {
+      await base44.entities.IvrSettings.update(ivrSettings.id, update);
+    } else {
+      await base44.entities.IvrSettings.create(update);
+    }
+    queryClient.invalidateQueries({ queryKey: ["ivrSettings"] });
+    toast.success("File uploaded successfully");
+    setUploading(false);
+  };
+
   if (currentUser?.role !== "admin") {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
