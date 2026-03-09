@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Trash2, Clock } from "lucide-react";
+import { Play, Trash2, Clock, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 
 const formatBadge = {
