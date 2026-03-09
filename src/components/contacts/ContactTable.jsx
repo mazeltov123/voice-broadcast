@@ -2,8 +2,9 @@ import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2, Phone } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Phone, PhoneCall } from "lucide-react";
 
 const statusStyles = {
   active: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -11,7 +12,7 @@ const statusStyles = {
   do_not_call: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
-export default function ContactTable({ contacts, groups, onEdit, onDelete }) {
+export default function ContactTable({ contacts, groups, onEdit, onDelete, selectedIds = [], onSelectionChange, onSendCalls }) {
   const getGroupName = (groupId) => {
     const g = (groups || []).find(g => g.id === groupId);
     return g ? g : null;
