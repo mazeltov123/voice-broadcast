@@ -28,10 +28,13 @@ import toast from "react-hot-toast";
 
 export default function AdminPanel() {
   const { data: currentUser } = useCurrentUser();
+  const queryClient = useQueryClient();
   const [inviteDialog, setInviteDialog] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [emailList, setEmailList] = useState([]);
   const [inviting, setInviting] = useState(false);
+  const [uploadingGreeting, setUploadingGreeting] = useState(false);
+  const [uploadingAnnouncement, setUploadingAnnouncement] = useState(false);
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ["allUsers"],
