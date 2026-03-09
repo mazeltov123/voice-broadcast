@@ -3,12 +3,14 @@ Deno.serve(async (req) => {
   const params = new URLSearchParams(body);
   const digit = params.get('Digits') || params.get('digit');
 
-  const baseUrl = req.url.replace(/\/[^\/]*(\?.*)?$/, '/');
+  const appId = Deno.env.get('BASE44_APP_ID');
+  const playBroadcastsUrl = `https://api.base44.app/api/apps/${appId}/functions/ivrPlayBroadcasts`;
+  const recordMessageUrl = `https://api.base44.app/api/apps/${appId}/functions/ivrRecordMessage`;
 
   if (digit === '1') {
     const texml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Redirect method="POST">${baseUrl}ivrPlayBroadcasts</Redirect>
+  <Redirect method="POST">${playBroadcastsUrl}</Redirect>
 </Response>`;
     return new Response(texml, { headers: { 'Content-Type': 'text/xml' } });
   }
@@ -16,7 +18,7 @@ Deno.serve(async (req) => {
   if (digit === '2') {
     const texml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Redirect method="POST">${baseUrl}ivrRecordMessage</Redirect>
+  <Redirect method="POST">${recordMessageUrl}</Redirect>
 </Response>`;
     return new Response(texml, { headers: { 'Content-Type': 'text/xml' } });
   }

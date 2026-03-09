@@ -24,8 +24,10 @@ Deno.serve(async (req) => {
     return new Response(texml, { headers: { 'Content-Type': 'text/xml' } });
   }
 
-  // Initial prompt — prompt caller to record
-  const selfUrl = req.url.split('?')[0];
+  // Initial prompt
+  const appId = Deno.env.get('BASE44_APP_ID');
+  const selfUrl = `https://api.base44.app/api/apps/${appId}/functions/ivrRecordMessage`;
+
   const texml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say>Please record your message after the tone. Press pound when you are finished.</Say>
