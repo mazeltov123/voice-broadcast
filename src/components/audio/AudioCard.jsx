@@ -16,13 +16,8 @@ export default function AudioCard({ audio, onDelete }) {
       audioRef.current.pause();
       setPlaying(false);
     } else {
-      try {
-        await audioRef.current.play();
-        setPlaying(true);
-      } catch (error) {
-        console.error('Audio playback failed:', error);
-        setPlaying(false);
-      }
+      await audioRef.current.play();
+      setPlaying(true);
     }
   };
 
@@ -78,12 +73,12 @@ export default function AudioCard({ audio, onDelete }) {
         <audio
           ref={audioRef}
           src={audio.file_url}
+          preload="auto"
           onEnded={() => setPlaying(false)}
-          onError={() => setPlaying(false)}
           onLoadedMetadata={() => {
             if (audioRef.current) setDuration(Math.round(audioRef.current.duration));
           }}
-          className="hidden"
+          style={{ display: "none" }}
         />
       </CardContent>
     </Card>
