@@ -12,18 +12,18 @@ const formatBadge = {
 };
 
 export default function AudioCard({ audio, onDelete }) {
-  const [showPlayer, setShowPlayer] = useState(false);
-
   return (
     <Card className="border-border/50 hover:shadow-md transition-all group">
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
-          <button
-            onClick={() => setShowPlayer(true)}
+          <a
+            href={audio.file_url}
+            target="_blank"
+            rel="noopener noreferrer"
             className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors"
           >
             <Play className="h-5 w-5 text-primary ml-0.5" />
-          </button>
+          </a>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{audio.title}</p>
             {audio.description && (
