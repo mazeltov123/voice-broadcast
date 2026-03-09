@@ -143,6 +143,58 @@ export default function AdminPanel() {
         </Button>
       </div>
 
+      {/* IVR Audio Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Music className="h-4 w-4 text-primary" />
+            IVR Audio Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          {[
+            { label: "Main Greeting", desc: "Played when a caller first connects (press 1 / press 2 instructions)", field: "greeting_url", uploading: uploadingGreeting, setUploading: setUploadingGreeting },
+            { label: "Record Announcement", desc: "Played before the caller records their message (press 2 flow)", field: "record_announcement_url", uploading: uploadingAnnouncement, setUploading: setUploadingAnnouncement },
+          ].map(({ label, desc, field, uploading, setUploading }) => (
+            <div key={field} className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">{label}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
+                {ivrSettings[field] && (
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                    <a href={ivrSettings[field]} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline truncate max-w-xs">
+                      {ivrSettings[field].split('/').pop()}
+                    </a>
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label htmlFor={`upload-${field}`} className="cursor-pointer">
+                  <Button asChild variant="outline" size="sm" disabled={uploading}>
+                    <span>
+                      <Upload className="h-3.5 w-3.5 mr-1.5" />
+                      {uploading ? "Uploading..." : ivrSettings[field] ? "Replace" : "Upload MP3"}
+                    </span>
+                  </Button>
+                </Label>
+                <input
+                  id={`upload-${field}`}
+                  type="file"
+                  accept="audio/mp3,audio/mpeg,audio/*"
+                  className="hidden"
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) uploadIvrFile(file, field, setUploading);
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       {/* Summary stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
