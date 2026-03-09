@@ -34,6 +34,8 @@ export default function Contacts() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [filterGroup, setFilterGroup] = useState("all");
   const [importDialog, setImportDialog] = useState(false);
+  const [selectedContactIds, setSelectedContactIds] = useState([]);
+  const [sendingCalls, setSendingCalls] = useState(false);
 
   const isAdmin = currentUser?.role === "admin";
   const { data: contacts = [], isLoading } = useQuery({
