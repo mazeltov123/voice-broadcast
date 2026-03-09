@@ -12,6 +12,8 @@ const formatBadge = {
 };
 
 export default function AudioCard({ audio, onDelete }) {
+  const [showPlayer, setShowPlayer] = useState(false);
+
   return (
     <Card className="border-border/50 hover:shadow-md transition-all group">
       <CardContent className="p-5">
