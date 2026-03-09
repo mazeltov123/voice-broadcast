@@ -11,13 +11,17 @@ export default function AudioCard({ audio, onDelete }) {
   const [duration, setDuration] = useState(audio.duration_seconds || 0);
 
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current || !audio.file_url) return;
     if (playing) {
       audioRef.current.pause();
       setPlaying(false);
     } else {
-      await audioRef.current.play();
-      setPlaying(true);
+      try {
+        await audioRef.current.play();
+        setPlaying(true);
+      } catch (e) {
+        setPlaying(false);
+      }
     }
   };
 
