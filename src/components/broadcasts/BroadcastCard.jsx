@@ -35,7 +35,7 @@ export default function BroadcastCard({ broadcast, onStart, onCancel, onDelete, 
               </Badge>
               {broadcast.created_date && (
                 <span className="text-[10px] text-muted-foreground">
-                  {format(new Date(broadcast.created_date), "MMM d, yyyy h:mm a")}
+                  {format(new Date(broadcast.created_date.endsWith('Z') ? broadcast.created_date : broadcast.created_date + 'Z'), "MMM d, yyyy h:mm a")}
                 </span>
               )}
             </div>
