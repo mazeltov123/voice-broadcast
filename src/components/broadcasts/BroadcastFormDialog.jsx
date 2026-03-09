@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -18,28 +19,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { X, Music, Users } from "lucide-react";
+import { X, Music, Users, Search } from "lucide-react";
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, groups, contacts, onSave }) {
   const [form, setForm] = useState({
     name: "",
     audio_file_id: "",
+    target_mode: "groups",
     target_groups: [],
+    target_contact_ids: [],
     throttle_mode: "throttled",
     calls_per_minute: 10,
     status: "draft",
   });
+  const [contactSearch, setContactSearch] = useState("");
 
   useEffect(() => {
     if (open) {
       setForm({
         name: "",
         audio_file_id: "",
+        target_mode: "groups",
         target_groups: [],
+        target_contact_ids: [],
         throttle_mode: "throttled",
         calls_per_minute: 10,
         status: "draft",
       });
+      setContactSearch("");
     }
   }, [open]);
 
@@ -52,7 +59,17 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
     }));
   };
 
+  const toggleContact = (contactId) => {
+    setForm(prev => ({
+      ...prev,
+      target_contact_ids: prev.target_contact_ids.includes(contactId)
+        ? prev.target_contact_ids.filter(c => c !== contactId)
+        : [...prev.target_contact_ids, contactId],
+    }));
+  };
+
   const getRecipientCount = () => {
+    if (form.target_mode === "contacts") return form.target_contact_ids.length;
     if (form.target_groups.length === 0) return contacts.filter(c => c.status === "active").length;
     const unique = new Set();
     contacts.filter(c => c.status === "active").forEach(c => {
@@ -64,6 +81,11 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
   };
 
   const selectedAudio = audioFiles.find(a => a.id === form.audio_file_id);
+  const activeContacts = contacts.filter(c => c.status === "active");
+  const filteredContacts = activeContacts.filter(c => {
+    const name = `${c.first_name} ${c.last_name || ""} ${c.phone_number}`.toLowerCase();
+    return name.includes(contactSearch.toLowerCase());
+  });
 
   const handleSave = () => {
     const recipientCount = getRecipientCount();
@@ -81,7 +103,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create Broadcast</DialogTitle>
         </DialogHeader>
@@ -111,26 +133,82 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Target Groups</Label>
-            <p className="text-[11px] text-muted-foreground">Leave empty to send to all active contacts</p>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {groups.map(g => (
-                <Badge
-                  key={g.id}
-                  variant={form.target_groups.includes(g.id) ? "default" : "outline"}
-                  className="cursor-pointer transition-all"
-                  onClick={() => toggleGroup(g.id)}
-                  style={form.target_groups.includes(g.id) ? { backgroundColor: g.color } : { borderColor: g.color, color: g.color }}
-                >
-                  {g.name}
-                  {form.target_groups.includes(g.id) && <X className="h-3 w-3 ml-1" />}
-                </Badge>
-              ))}
+            <Label className="text-xs">Target By</Label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={form.target_mode === "groups" ? "default" : "outline"}
+                onClick={() => setForm({ ...form, target_mode: "groups" })}
+              >
+                Groups
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={form.target_mode === "contacts" ? "default" : "outline"}
+                onClick={() => setForm({ ...form, target_mode: "contacts" })}
+              >
+                Specific Contacts
+              </Button>
             </div>
-            <div className="flex items-center gap-2 mt-2 bg-muted/50 rounded-lg px-3 py-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">{getRecipientCount()} recipients</span>
+          </div>
+
+          {form.target_mode === "groups" ? (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Target Groups</Label>
+              <p className="text-[11px] text-muted-foreground">Leave empty to send to all active contacts</p>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {groups.map(g => (
+                  <Badge
+                    key={g.id}
+                    variant={form.target_groups.includes(g.id) ? "default" : "outline"}
+                    className="cursor-pointer transition-all"
+                    onClick={() => toggleGroup(g.id)}
+                    style={form.target_groups.includes(g.id) ? { backgroundColor: g.color } : { borderColor: g.color, color: g.color }}
+                  >
+                    {g.name}
+                    {form.target_groups.includes(g.id) && <X className="h-3 w-3 ml-1" />}
+                  </Badge>
+                ))}
+              </div>
             </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label className="text-xs">Select Contacts</Label>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  className="pl-8 h-8 text-sm"
+                  placeholder="Search contacts..."
+                  value={contactSearch}
+                  onChange={e => setContactSearch(e.target.value)}
+                />
+              </div>
+              <div className="border border-border rounded-lg max-h-48 overflow-y-auto divide-y divide-border/50">
+                {filteredContacts.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No active contacts found</p>
+                ) : (
+                  filteredContacts.map(c => (
+                    <label key={c.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/30 cursor-pointer">
+                      <Checkbox
+                        checked={form.target_contact_ids.includes(c.id)}
+                        onCheckedChange={() => toggleContact(c.id)}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{c.first_name} {c.last_name || ""}</p>
+                        <p className="text-xs text-muted-foreground">{c.phone_number}</p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center gap-2 bg-muted/50 rounded-lg px-3 py-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium">{getRecipientCount()} recipients</span>
           </div>
 
           <div className="space-y-1.5">
@@ -167,7 +245,10 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSave} disabled={!form.name || !form.audio_file_id}>
+          <Button
+            onClick={handleSave}
+            disabled={!form.name || !form.audio_file_id || (form.target_mode === "contacts" && form.target_contact_ids.length === 0)}
+          >
             Create Broadcast
           </Button>
         </DialogFooter>

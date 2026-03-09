@@ -49,14 +49,16 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { broadcastId, broadcastName, targetGroups } = await req.json();
+  const { broadcastId, broadcastName, targetGroups, targetContactIds } = await req.json();
 
   // Fetch all active contacts
   const allContacts = await base44.asServiceRole.entities.Contact.filter({ status: 'active' });
 
-  // Filter to target groups if specified, otherwise all active contacts
+  // Filter by specific contacts, groups, or all active
   let recipients = allContacts;
-  if (targetGroups && targetGroups.length > 0) {
+  if (targetContactIds && targetContactIds.length > 0) {
+    recipients = allContacts.filter(c => targetContactIds.includes(c.id));
+  } else if (targetGroups && targetGroups.length > 0) {
     recipients = allContacts.filter(c =>
       (c.groups || []).some(g => targetGroups.includes(g))
     );
