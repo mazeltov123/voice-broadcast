@@ -127,6 +127,20 @@ export default function Contacts() {
     e.target.value = "";
   };
 
+  const handleSendCalls = async () => {
+    if (selectedContactIds.length === 0) return;
+    setSendingCalls(true);
+    const loadingToast = toast.loading(`Calling ${selectedContactIds.length} contact(s)...`);
+    const res = await base44.functions.invoke('sendDirectCalls', { contactIds: selectedContactIds });
+    setSendingCalls(false);
+    setSelectedContactIds([]);
+    if (res.data?.success) {
+      toast.success(`Calls initiated: ${res.data.calls_made} successful, ${res.data.errors} failed`, { id: loadingToast });
+    } else {
+      toast.error('Failed to send calls', { id: loadingToast });
+    }
+  };
+
   const filtered = contacts.filter(c => {
     const matchesSearch = !search || `${c.first_name} ${c.last_name} ${c.phone_number} ${c.email}`.toLowerCase().includes(search.toLowerCase());
     const matchesGroup = filterGroup === "all" || (c.groups || []).includes(filterGroup);
