@@ -34,6 +34,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
     status: "draft",
   });
   const [contactSearch, setContactSearch] = useState("");
+  const [showRecorder, setShowRecorder] = useState(false);
 
   useEffect(() => {
     if (open) {
