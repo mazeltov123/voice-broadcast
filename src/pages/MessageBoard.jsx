@@ -35,9 +35,15 @@ export default function MessageBoard() {
       setPlayingUrl(null);
     } else {
       setPlayingUrl(message.recording_url);
-      setTimeout(() => audioRef.current?.play(), 100);
     }
   };
+
+  React.useEffect(() => {
+    if (playingUrl && audioRef.current) {
+      audioRef.current.load();
+      audioRef.current.play();
+    }
+  }, [playingUrl]);
 
   const filtered = messages.filter(m => {
     const matchesSearch = !search || `${m.caller_name} ${m.caller_phone} ${m.broadcast_name}`.toLowerCase().includes(search.toLowerCase());
