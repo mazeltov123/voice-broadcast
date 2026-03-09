@@ -49,6 +49,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
         status: "draft",
       });
       setContactSearch("");
+      setShowRecorder(false);
     }
   }, [open]);
 
