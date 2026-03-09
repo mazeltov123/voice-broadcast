@@ -63,6 +63,7 @@ export default function Broadcasts() {
         broadcastId: broadcast.id,
         broadcastName: data.name,
         targetGroups: data.target_groups || [],
+        targetContactIds: data.target_contact_ids || [],
       }).catch(console.error);
       return broadcast;
     },
