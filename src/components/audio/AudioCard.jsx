@@ -1,49 +1,28 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, Trash2, Music, Clock } from "lucide-react";
+import { Play, Trash2, Clock } from "lucide-react";
 import { format } from "date-fns";
 
+const formatBadge = {
+  mp3: "bg-blue-50 text-blue-700 border-blue-200",
+  wav: "bg-purple-50 text-purple-700 border-purple-200",
+  ulaw: "bg-amber-50 text-amber-700 border-amber-200",
+};
+
 export default function AudioCard({ audio, onDelete }) {
-  const audioRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
-  const [duration, setDuration] = useState(audio.duration_seconds || 0);
-
-  const togglePlay = async () => {
-    if (!audioRef.current || !audio.file_url) return;
-    if (playing) {
-      audioRef.current.pause();
-      setPlaying(false);
-    } else {
-      try {
-        await audioRef.current.play();
-        setPlaying(true);
-      } catch (e) {
-        setPlaying(false);
-      }
-    }
-  };
-
-  const formatBadge = {
-    mp3: "bg-blue-50 text-blue-700 border-blue-200",
-    wav: "bg-purple-50 text-purple-700 border-purple-200",
-    ulaw: "bg-amber-50 text-amber-700 border-amber-200",
-  };
+  const [showPlayer, setShowPlayer] = useState(false);
 
   return (
     <Card className="border-border/50 hover:shadow-md transition-all group">
       <CardContent className="p-5">
         <div className="flex items-start gap-4">
           <button
-            onClick={togglePlay}
+            onClick={() => setShowPlayer(true)}
             className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 hover:bg-primary/20 transition-colors"
           >
-            {playing ? (
-              <Pause className="h-5 w-5 text-primary" />
-            ) : (
-              <Play className="h-5 w-5 text-primary ml-0.5" />
-            )}
+            <Play className="h-5 w-5 text-primary ml-0.5" />
           </button>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{audio.title}</p>
@@ -74,16 +53,11 @@ export default function AudioCard({ audio, onDelete }) {
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
-        <audio
-          ref={audioRef}
-          src={audio.file_url}
-          preload="auto"
-          onEnded={() => setPlaying(false)}
-          onLoadedMetadata={() => {
-            if (audioRef.current) setDuration(Math.round(audioRef.current.duration));
-          }}
-          style={{ display: "none" }}
-        />
+        {showPlayer && audio.file_url && (
+          <div className="mt-3">
+            <audio controls autoPlay src={audio.file_url} className="w-full h-8" onEnded={() => setShowPlayer(false)} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
