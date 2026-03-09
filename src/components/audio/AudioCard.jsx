@@ -54,7 +54,12 @@ export default function AudioCard({ audio, onDelete }) {
           </Button>
         </div>
 
+      {showPlayer && audio.file_url && (
+        <div className="mt-3">
+          <audio controls autoPlay src={audio.file_url} className="w-full" />
+        </div>
+      )}
       </CardContent>
-    </Card>
-  );
-}
+      </Card>
+      );
+      }
