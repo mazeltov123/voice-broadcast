@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const TELNYX_API_KEY = Deno.env.get('TELNYX_API_KEY');
@@ -92,28 +91,33 @@ return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
 const { broadcastId, broadcastName, targetGroups } = await req.json();
 
-const broadcasts = await base44.asServiceRole.entities.Broadcast.filter({ id: broadcastId });
-const broadcast = broadcasts[0];
-if (!broadcast) {
-return Response.json({ error: 'Broadcast not found' }, { status: 404 });
-}
+  const broadcasts = await base44.asServiceRole.entities.Broadcast.filter({ id: broadcastId });
+  const broadcast = broadcasts[0];
+  if (!broadcast) {
+    return Response.json({ error: 'Broadcast not found' }, { status: 404 });
+  }
 
-let audioUrl = '';
-if (broadcast.audio_file_id) {
-const audioFiles = await base44.asServiceRole.entities.AudioFile.list();
-const audioFile = audioFiles.find((a) => a.id === broadcast.audio_file_id);
-audioUrl = audioFile?.file_url || '';
-}
+  let audioUrl = '';
+  if (broadcast.audio_file_id) {
+    const audioFiles = await base44.asServiceRole.entities.AudioFile.list();
+    const audioFile = audioFiles.find((a) => a.id === broadcast.audio_file_id);
+    audioUrl = audioFile?.file_url || '';
+  }
 
-await base44.asServiceRole.entities.Broadcast.update(broadcastId, { status: 'in_progress' });
+  await base44.asServiceRole.entities.Broadcast.update(broadcastId, { status: 'in_progress' });
 
-const allContacts = await base44.asServiceRole.entities.Contact.filter({ status: 'active' });
-let recipients = allContacts;
-if (targetGroups && targetGroups.length > 0) {
-recipients = allContacts.filter((c) =>
-(c.groups || []).some((g) => targetGroups.includes(g))
-);
-}
+  const allContacts = await base44.asServiceRole.entities.Contact.filter({ status: 'active' });
+  let recipients = allContacts;
+
+  if (broadcast.target_mode === 'contacts' && broadcast.target_contact_ids && broadcast.target_contact_ids.length > 0) {
+    // Contacts mode: only send to explicitly selected contacts, ignore groups
+    recipients = allContacts.filter((c) => broadcast.target_contact_ids.includes(c.id));
+  } else if (targetGroups && targetGroups.length > 0) {
+    // Groups mode: filter by groups
+    recipients = allContacts.filter((c) =>
+      (c.groups || []).some((g) => targetGroups.includes(g))
+    );
+  }
 
 if (recipients.length === 0) {
 return Response.json({ success: true, recipients: 0, sms_sent: 0, calls_made: 0, errors: 0 });
@@ -177,4 +181,3 @@ recipients: recipients.length,
 ...results,
 });
 });
-
