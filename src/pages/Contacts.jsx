@@ -208,6 +208,9 @@ export default function Contacts() {
             groups={groups}
             onEdit={(c) => { setEditingContact(c); setContactDialog(true); }}
             onDelete={(c) => setDeleteTarget(c)}
+            selectedIds={selectedContactIds}
+            onSelectionChange={setSelectedContactIds}
+            onSendCalls={handleSendCalls}
           />
         </TabsContent>
 
