@@ -111,7 +111,7 @@ export default function MessageBoard() {
         </div>
       )}
 
-      {playingUrl && <audio ref={audioRef} src={playingUrl} onEnded={() => setPlayingUrl(null)} />}
+      <audio ref={audioRef} src={playingUrl || ""} onEnded={() => setPlayingUrl(null)} className="hidden" />
     </div>
   );
 }
