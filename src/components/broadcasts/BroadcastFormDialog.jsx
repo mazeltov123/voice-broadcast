@@ -117,22 +117,43 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs">Audio Message *</Label>
-            <Select value={form.audio_file_id} onValueChange={v => setForm({ ...form, audio_file_id: v })}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select an audio file" />
-              </SelectTrigger>
-              <SelectContent>
-                {audioFiles.map(a => (
-                  <SelectItem key={a.id} value={a.id}>
-                    <div className="flex items-center gap-2">
-                      <Music className="h-3.5 w-3.5" />
-                      {a.title}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs">Audio Message *</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 text-xs text-muted-foreground px-2"
+                onClick={() => setShowRecorder(v => !v)}
+              >
+                <Mic className="h-3 w-3 mr-1" />
+                {showRecorder ? "Pick from library" : "Record new"}
+              </Button>
+            </div>
+            {showRecorder ? (
+              <VoiceRecorder
+                onRecordingReady={(audioFile) => {
+                  setForm(prev => ({ ...prev, audio_file_id: audioFile.id }));
+                  setShowRecorder(false);
+                }}
+              />
+            ) : (
+              <Select value={form.audio_file_id} onValueChange={v => setForm({ ...form, audio_file_id: v })}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an audio file" />
+                </SelectTrigger>
+                <SelectContent>
+                  {audioFiles.map(a => (
+                    <SelectItem key={a.id} value={a.id}>
+                      <div className="flex items-center gap-2">
+                        <Music className="h-3.5 w-3.5" />
+                        {a.title}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           <div className="space-y-1.5">
