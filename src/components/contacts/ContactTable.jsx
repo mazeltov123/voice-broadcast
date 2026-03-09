@@ -18,11 +18,38 @@ export default function ContactTable({ contacts, groups, onEdit, onDelete, selec
     return g ? g : null;
   };
 
+  const allSelected = contacts.length > 0 && contacts.every(c => selectedIds.includes(c.id));
+  const toggleAll = () => {
+    if (allSelected) {
+      onSelectionChange([]);
+    } else {
+      onSelectionChange(contacts.map(c => c.id));
+    }
+  };
+  const toggleOne = (id) => {
+    if (selectedIds.includes(id)) {
+      onSelectionChange(selectedIds.filter(x => x !== id));
+    } else {
+      onSelectionChange([...selectedIds, id]);
+    }
+  };
+
   return (
     <div className="rounded-xl border border-border/50 bg-white overflow-hidden">
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-border/50">
+          <span className="text-sm font-medium text-primary">{selectedIds.length} contact{selectedIds.length > 1 ? 's' : ''} selected</span>
+          <Button size="sm" onClick={onSendCalls} className="gap-2">
+            <PhoneCall className="h-4 w-4" /> Send Call to Selected
+          </Button>
+        </div>
+      )}
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/30">
+            <TableHead className="w-10">
+              <Checkbox checked={allSelected} onCheckedChange={toggleAll} />
+            </TableHead>
             <TableHead className="text-xs font-semibold">Name</TableHead>
             <TableHead className="text-xs font-semibold">Phone</TableHead>
             <TableHead className="text-xs font-semibold hidden md:table-cell">Email</TableHead>
