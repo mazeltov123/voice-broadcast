@@ -46,7 +46,7 @@ function formatDuration(seconds) {
 export default function BroadcastReportDialog({ broadcast, open, onOpenChange }) {
   const [reports, setReports] = useState([]);
   const [playing, setPlaying] = useState(false);
-  const audioRef = React.useRef(null);
+  const audioRef = useRef(null);
 
   const { data: audioFile } = useQuery({
     queryKey: ["audioFile", broadcast?.audio_file_id],
