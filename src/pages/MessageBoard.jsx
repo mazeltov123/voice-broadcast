@@ -13,6 +13,7 @@ export default function MessageBoard() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("all");
+  const [section, setSection] = useState("calls");
   const audioRef = useRef(null);
   const [playingUrl, setPlayingUrl] = useState(null);
 
@@ -21,9 +22,19 @@ export default function MessageBoard() {
     queryFn: () => base44.entities.InboundMessage.list("-created_date"),
   });
 
+  const { data: smsList = [], isLoading: smsLoading } = useQuery({
+    queryKey: ["inboundSms"],
+    queryFn: () => base44.entities.InboundSms.list("-created_date"),
+  });
+
   const updateMessage = useMutation({
     mutationFn: ({ id, data }) => base44.entities.InboundMessage.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["inbound"] }),
+  });
+
+  const updateSms = useMutation({
+    mutationFn: ({ id, data }) => base44.entities.InboundSms.update(id, data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["inboundSms"] }),
   });
 
   const handleStatusChange = (message, status) => {
