@@ -41,6 +41,10 @@ export default function MessageBoard() {
     updateMessage.mutate({ id: message.id, data: { status } });
   };
 
+  const handleSmsStatusChange = (sms, status) => {
+    updateSms.mutate({ id: sms.id, data: { status } });
+  };
+
   const handlePlay = (message) => {
     if (playingUrl === message.recording_url) {
       audioRef.current?.pause();
