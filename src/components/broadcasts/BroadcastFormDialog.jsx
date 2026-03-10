@@ -33,9 +33,11 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
     throttle_mode: "throttled",
     calls_per_minute: 10,
     status: "draft",
+    scheduled_at: "",
   });
   const [contactSearch, setContactSearch] = useState("");
   const [showRecorder, setShowRecorder] = useState(false);
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -48,9 +50,11 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
         throttle_mode: "throttled",
         calls_per_minute: 10,
         status: "draft",
+        scheduled_at: "",
       });
       setContactSearch("");
       setShowRecorder(false);
+      setScheduleEnabled(false);
     }
   }, [open]);
 
