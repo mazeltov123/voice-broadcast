@@ -118,6 +118,9 @@ export default function ContactTable({ contacts, groups, onEdit, onDelete, onSen
                       <DropdownMenuItem onClick={() => onEdit(contact)}>
                         <Pencil className="h-3.5 w-3.5 mr-2" /> Edit
                       </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onSendSms && onSendSms(contact)}>
+                        <MessageSquare className="h-3.5 w-3.5 mr-2" /> Send SMS
+                      </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onDelete(contact)} className="text-destructive">
                         <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
                       </DropdownMenuItem>
