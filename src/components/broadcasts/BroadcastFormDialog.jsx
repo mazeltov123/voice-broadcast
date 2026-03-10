@@ -146,21 +146,31 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
                 }}
               />
             ) : (
-              <Select value={form.audio_file_id} onValueChange={v => setForm({ ...form, audio_file_id: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select an audio file" />
-                </SelectTrigger>
-                <SelectContent>
-                  {audioFiles.map(a => (
-                    <SelectItem key={a.id} value={a.id}>
-                      <div className="flex items-center gap-2">
-                        <Music className="h-3.5 w-3.5" />
-                        {a.title}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <>
+                <Select value={form.audio_file_id} onValueChange={v => setForm({ ...form, audio_file_id: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select an audio file" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {audioFiles.map(a => (
+                      <SelectItem key={a.id} value={a.id}>
+                        <div className="flex items-center gap-2">
+                          <Music className="h-3.5 w-3.5" />
+                          {a.title}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedAudio?.file_url && (
+                  <audio
+                    key={selectedAudio.id}
+                    controls
+                    className="w-full h-9 mt-1.5"
+                    src={selectedAudio.file_url}
+                  />
+                )}
+              </>
             )}
           </div>
 
