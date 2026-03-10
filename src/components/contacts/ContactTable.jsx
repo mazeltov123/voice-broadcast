@@ -12,7 +12,7 @@ const statusStyles = {
   do_not_call: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
-export default function ContactTable({ contacts, groups, onEdit, onDelete, selectedIds = [], onSelectionChange, onSendCalls }) {
+export default function ContactTable({ contacts, groups, onEdit, onDelete, onSendSms, selectedIds = [], onSelectionChange, onSendCalls }) {
   const getGroupName = (groupId) => {
     const g = (groups || []).find(g => g.id === groupId);
     return g ? g : null;
