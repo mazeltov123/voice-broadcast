@@ -274,14 +274,53 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
               </p>
             </div>
           )}
+          {/* Schedule toggle */}
+          <div className="border border-border rounded-lg p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-xs font-medium cursor-pointer" htmlFor="schedule-toggle">Schedule for later</Label>
+              </div>
+              <Switch
+                id="schedule-toggle"
+                checked={scheduleEnabled}
+                onCheckedChange={setScheduleEnabled}
+              />
+            </div>
+            {scheduleEnabled && (
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Send date & time</Label>
+                <div className="relative">
+                  <Clock className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    type="datetime-local"
+                    className="pl-8"
+                    value={form.scheduled_at}
+                    min={new Date(Date.now() + 5 * 60000).toISOString().slice(0, 16)}
+                    onChange={e => setForm({ ...form, scheduled_at: e.target.value })}
+                  />
+                </div>
+                {form.scheduled_at && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Will send on {new Date(form.scheduled_at).toLocaleString()}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
           <Button
             onClick={handleSave}
-            disabled={!form.name || !form.audio_file_id || (form.target_mode === "contacts" && form.target_contact_ids.length === 0)}
+            disabled={
+              !form.name ||
+              !form.audio_file_id ||
+              (form.target_mode === "contacts" && form.target_contact_ids.length === 0) ||
+              (scheduleEnabled && !form.scheduled_at)
+            }
           >
-            Create Broadcast
+            {scheduleEnabled && form.scheduled_at ? "Schedule Broadcast" : "Create Broadcast"}
           </Button>
         </DialogFooter>
       </DialogContent>
