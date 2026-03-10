@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Phone, Clock, CheckCircle2, XCircle, PhoneOff, PhoneMissed, Voicemail, Loader2 } from "lucide-react";
+import { Phone, Clock, CheckCircle2, XCircle, PhoneOff, PhoneMissed, Voicemail, Loader2, Play, Pause, Music } from "lucide-react";
 import { format } from "date-fns";
 
 const statusColors = {
