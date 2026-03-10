@@ -80,58 +80,87 @@ export default function MessageBoard() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Message Board</h1>
-        <p className="text-sm text-muted-foreground mt-1">Inbound call logs from your voice portal</p>
+        <p className="text-sm text-muted-foreground mt-1">Inbound calls and SMS messages</p>
       </div>
 
-      <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200/50">
-        <CardContent className="p-4 flex items-start gap-3">
-          <Info className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
-          <div>
-            <p className="text-sm font-medium text-emerald-900">IVR Voice Portal</p>
-            <p className="text-xs text-emerald-700 mt-0.5">
-              When recipients call back, the IVR menu plays previous broadcast messages in descending date order (newest first).
-              Caller interactions and selections are logged below.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Section toggle */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setSection("calls")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${section === "calls" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+        >
+          <PhoneIncoming className="h-4 w-4" />
+          Calls {newCount > 0 && <span className="ml-1 bg-white/20 rounded-full px-1.5 text-xs">{newCount}</span>}
+        </button>
+        <button
+          onClick={() => setSection("sms")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${section === "sms" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
+        >
+          <MessageSquare className="h-4 w-4" />
+          SMS {newSmsCount > 0 && <span className="ml-1 bg-white/20 rounded-full px-1.5 text-xs">{newSmsCount}</span>}
+        </button>
+      </div>
+
+      {section === "calls" && (
+        <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200/50">
+          <CardContent className="p-4 flex items-start gap-3">
+            <Info className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-emerald-900">IVR Voice Portal</p>
+              <p className="text-xs text-emerald-700 mt-0.5">
+                When recipients call back, the IVR menu plays previous broadcast messages in descending date order (newest first).
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input className="pl-9" placeholder="Search messages..." value={search} onChange={e => setSearch(e.target.value)} />
+          <Input className="pl-9" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <Tabs value={tab} onValueChange={setTab}>
           <TabsList>
-            <TabsTrigger value="all">All ({messages.length})</TabsTrigger>
-            <TabsTrigger value="new">New ({newCount})</TabsTrigger>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="new">New</TabsTrigger>
             <TabsTrigger value="reviewed">Reviewed</TabsTrigger>
             <TabsTrigger value="archived">Archived</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">
-          {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-20">
-          <PhoneIncoming className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">No inbound messages</p>
-          <p className="text-sm text-muted-foreground/60 mt-1">Messages will appear here when recipients call back</p>
-        </div>
+      {section === "calls" ? (
+        isLoading ? (
+          <div className="space-y-3">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-20">
+            <PhoneIncoming className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+            <p className="text-muted-foreground">No inbound calls</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filtered.map(m => (
+              <InboundMessageRow key={m.id} message={m} onStatusChange={handleStatusChange} onPlay={handlePlay} />
+            ))}
+          </div>
+        )
       ) : (
-        <div className="space-y-3">
-          {filtered.map(m => (
-            <InboundMessageRow
-              key={m.id}
-              message={m}
-              onStatusChange={handleStatusChange}
-              onPlay={handlePlay}
-            />
-          ))}
-        </div>
+        smsLoading ? (
+          <div className="space-y-3">{[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
+        ) : filteredSms.length === 0 ? (
+          <div className="text-center py-20">
+            <MessageSquare className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
+            <p className="text-muted-foreground">No inbound SMS messages</p>
+            <p className="text-sm text-muted-foreground/60 mt-1">Point your Telnyx webhook to the <strong>smsInbound</strong> function URL</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredSms.map(m => (
+              <InboundSmsRow key={m.id} sms={m} onStatusChange={handleSmsStatusChange} />
+            ))}
+          </div>
+        )
       )}
 
       <audio ref={audioRef} src={playingUrl || ""} onEnded={() => setPlayingUrl(null)} className="hidden" />
