@@ -11,6 +11,7 @@ import { Plus, Search, Upload, Users, FolderOpen, Trash2, Pencil } from "lucide-
 import ContactFormDialog from "@/components/contacts/ContactFormDialog";
 import GroupFormDialog from "@/components/contacts/GroupFormDialog";
 import ContactTable from "@/components/contacts/ContactTable";
+import SendSmsDialog from "@/components/contacts/SendSmsDialog";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
