@@ -67,7 +67,14 @@ export default function MessageBoard() {
     return matchesSearch && matchesTab;
   });
 
+  const filteredSms = smsList.filter(m => {
+    const matchesSearch = !search || `${m.sender_name} ${m.from_number} ${m.body}`.toLowerCase().includes(search.toLowerCase());
+    const matchesTab = tab === "all" || m.status === tab;
+    return matchesSearch && matchesTab;
+  });
+
   const newCount = messages.filter(m => m.status === "new").length;
+  const newSmsCount = smsList.filter(m => m.status === "new").length;
 
   return (
     <div className="space-y-6">
