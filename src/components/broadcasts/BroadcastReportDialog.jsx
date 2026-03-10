@@ -131,6 +131,31 @@ export default function BroadcastReportDialog({ broadcast, open, onOpenChange })
           </DialogTitle>
         </DialogHeader>
 
+        {/* Audio Player */}
+        {audioFile?.file_url && (
+          <div className="flex items-center gap-3 p-3 bg-muted/40 rounded-lg border">
+            <button
+              onClick={togglePlay}
+              className="h-9 w-9 rounded-full bg-primary flex items-center justify-center text-white hover:bg-primary/90 transition-colors flex-shrink-0"
+            >
+              {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
+            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium flex items-center gap-1.5">
+                <Music className="h-3.5 w-3.5 text-muted-foreground" />
+                {audioFile.title}
+              </p>
+              <p className="text-xs text-muted-foreground">Broadcast message</p>
+            </div>
+            <audio
+              ref={audioRef}
+              src={audioFile.file_url}
+              onEnded={() => setPlaying(false)}
+              className="hidden"
+            />
+          </div>
+        )}
+
         {isLoading ? (
           <div className="py-12 text-center text-muted-foreground">Loading report...</div>
         ) : (
