@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Pencil, Trash2, Phone, PhoneCall } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Phone, PhoneCall, MessageSquare } from "lucide-react";
 
 const statusStyles = {
   active: "bg-emerald-50 text-emerald-700 border-emerald-200",
