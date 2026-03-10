@@ -280,6 +280,11 @@ export default function Contacts() {
           }
         }}
       />
+      <SendSmsDialog
+        open={!!smsContact}
+        onOpenChange={(o) => { if (!o) setSmsContact(null); }}
+        contact={smsContact}
+      />
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
