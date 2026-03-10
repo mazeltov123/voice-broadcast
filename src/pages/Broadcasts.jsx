@@ -105,6 +105,7 @@ export default function Broadcasts() {
         <TabsList>
           <TabsTrigger value="all">All ({broadcasts.length})</TabsTrigger>
           <TabsTrigger value="draft">Draft ({broadcasts.filter(b => b.status === "draft").length})</TabsTrigger>
+          <TabsTrigger value="scheduled">Scheduled ({broadcasts.filter(b => b.status === "scheduled").length})</TabsTrigger>
           <TabsTrigger value="in_progress">Active ({broadcasts.filter(b => b.status === "in_progress").length})</TabsTrigger>
           <TabsTrigger value="completed">Completed ({broadcasts.filter(b => b.status === "completed").length})</TabsTrigger>
         </TabsList>
