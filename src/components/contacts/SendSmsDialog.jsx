@@ -15,17 +15,19 @@ export default function SendSmsDialog({ open, onOpenChange, contact }) {
     if (!message.trim()) return;
     setSending(true);
     const loadingToast = toast.loading("Sending SMS...");
-    const res = await base44.functions.invoke("sendSms", {
-      to: contact.phone_number,
-      message: message.trim(),
-    });
-    setSending(false);
-    if (res.data?.success) {
+    try {
+      const res = await base44.functions.invoke("sendSms", {
+        to: contact.phone_number,
+        message: message.trim(),
+      });
       toast.success("SMS sent!", { id: loadingToast });
       setMessage("");
       onOpenChange(false);
-    } else {
-      toast.error(res.data?.error || "Failed to send SMS", { id: loadingToast });
+    } catch (err) {
+      const errMsg = err?.response?.data?.error || err?.message || "Failed to send SMS";
+      toast.error(errMsg, { id: loadingToast });
+    } finally {
+      setSending(false);
     }
   };
 
