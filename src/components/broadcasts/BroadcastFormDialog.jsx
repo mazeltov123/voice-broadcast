@@ -98,6 +98,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
   const handleSave = () => {
     const recipientCount = getRecipientCount();
     const targetGroupNames = form.target_groups.map(gid => groups.find(g => g.id === gid)?.name).filter(Boolean);
+    const isScheduled = scheduleEnabled && !!form.scheduled_at;
     onSave({
       ...form,
       audio_file_title: selectedAudio?.title || "",
@@ -106,6 +107,8 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
       pending: recipientCount,
       delivered: 0,
       failed: 0,
+      status: isScheduled ? "scheduled" : "draft",
+      scheduled_at: isScheduled ? new Date(form.scheduled_at).toISOString() : undefined,
     });
   };
 
