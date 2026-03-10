@@ -210,6 +210,7 @@ export default function Contacts() {
             groups={groups}
             onEdit={(c) => { setEditingContact(c); setContactDialog(true); }}
             onDelete={(c) => setDeleteTarget(c)}
+            onSendSms={(c) => setSmsContact(c)}
             selectedIds={selectedContactIds}
             onSelectionChange={setSelectedContactIds}
             onSendCalls={handleSendCalls}
