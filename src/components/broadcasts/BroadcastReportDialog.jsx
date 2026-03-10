@@ -45,6 +45,26 @@ function formatDuration(seconds) {
 
 export default function BroadcastReportDialog({ broadcast, open, onOpenChange }) {
   const [reports, setReports] = useState([]);
+  const [playing, setPlaying] = useState(false);
+  const audioRef = React.useRef(null);
+
+  const { data: audioFile } = useQuery({
+    queryKey: ["audioFile", broadcast?.audio_file_id],
+    queryFn: () => base44.entities.AudioFile.filter({ id: broadcast.audio_file_id }),
+    enabled: !!broadcast?.audio_file_id && open,
+    select: (data) => data[0],
+  });
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+    } else {
+      audioRef.current.play();
+      setPlaying(true);
+    }
+  };
 
   const { data: fetchedReports = [], isLoading } = useQuery({
     queryKey: ["callReports", broadcast?.id],
