@@ -58,13 +58,15 @@ export default function Broadcasts() {
   const createBroadcast = useMutation({
     mutationFn: async (data) => {
       const broadcast = await base44.entities.Broadcast.create(data);
-      // Fire Telnyx SMS + voice notifications to contact list (non-blocking)
-      base44.functions.invoke('sendBroadcastNotification', {
-        broadcastId: broadcast.id,
-        broadcastName: data.name,
-        targetGroups: data.target_groups || [],
-        targetContactIds: data.target_contact_ids || [],
-      }).catch(console.error);
+      // Only fire immediately if NOT scheduled
+      if (data.status !== "scheduled") {
+        base44.functions.invoke('sendBroadcastNotification', {
+          broadcastId: broadcast.id,
+          broadcastName: data.name,
+          targetGroups: data.target_groups || [],
+          targetContactIds: data.target_contact_ids || [],
+        }).catch(console.error);
+      }
       return broadcast;
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["broadcasts"] }); setCreateDialog(false); },
