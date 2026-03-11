@@ -101,7 +101,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       } else {
         await telnyxCommand(callControlId, 'gather_using_speak', {
           payload: 'Welcome to Voice Cast. Press 1 to listen to previous broadcasts. Press 2 to record and send a new message.',
-          voice: 'female',
+          voice: 'male',
           language: 'en-US',
           minimum_digits: 1,
           maximum_digits: 1,
@@ -124,7 +124,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           if (playlist.length === 0) {
             await telnyxCommand(callControlId, 'speak', {
               payload: 'There are no broadcasts available. Goodbye.',
-              voice: 'female',
+              voice: 'male',
               language: 'en-US',
               client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
             });
@@ -348,7 +348,7 @@ async function handleOutbound(eventType, payload, callControlId, state, base44) 
       } else {
         await telnyxCommand(callControlId, 'speak', {
           payload: 'You have a new voice broadcast from VoiceCast. Please check the system for details.',
-          voice: 'female',
+          voice: 'male',
           language: 'en-US',
           client_state: encodeState(state),
         });
