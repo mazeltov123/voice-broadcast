@@ -40,9 +40,15 @@ async function fetchPlaylist(base44) {
   const allBroadcasts = await base44.asServiceRole.entities.Broadcast.list('-created_date', 100);
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-  const broadcasts = allBroadcasts.filter(b =>
-    b.status === 'completed' && new Date(b.created_date) >= oneYearAgo
-  );
+  const now = new Date();
+const broadcasts = allBroadcasts.filter(b => {
+const createdAt = new Date(b.created_date);
+const scheduledAt = b.scheduled_at ? new Date(b.scheduled_at) : null;
+const isStarted = b.status === 'completed' || b.status === 'in_progress';
+const isNotFuture = !scheduledAt || scheduledAt <= now;
+return isStarted && isNotFuture && createdAt >= oneYearAgo;
+});
+  
 
   if (broadcasts.length === 0) return [];
 
