@@ -229,6 +229,7 @@ export default function Contacts() {
             selectedIds={selectedContactIds}
             onSelectionChange={setSelectedContactIds}
             onSendCalls={handleSendCalls}
+            onAssignGroup={handleAssignGroup}
           />
         </TabsContent>
 
