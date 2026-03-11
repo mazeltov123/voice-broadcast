@@ -419,7 +419,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
                 </div>
                 {form.scheduled_at && (
                   <p className="text-[11px] text-muted-foreground">
-                    Will send on {utcToEasternLocal(easternLocalToUTC(form.scheduled_at)).replace('T', ' ')} EST
+                    Will send on {new Date(easternLocalToUTC(form.scheduled_at)).toLocaleString('en-US', { timeZone: 'America/New_York', dateStyle: 'medium', timeStyle: 'short' })} ET
                   </p>
                 )}
               </div>
