@@ -25,21 +25,27 @@ import { Switch } from "@/components/ui/switch";
 import VoiceRecorder from "./VoiceRecorder";
 
 // Convert a UTC ISO string to a datetime-local value in Eastern time
-const EST_OFFSET_MINUTES = 5 * 60; // EST is always UTC-5
-
 function utcToEasternLocal(utcString) {
   const date = new Date(utcString);
-  const estMs = date.getTime() - EST_OFFSET_MINUTES * 60000;
-  const local = new Date(estMs);
-  const pad = n => String(n).padStart(2, '0');
-  return `${local.getUTCFullYear()}-${pad(local.getUTCMonth() + 1)}-${pad(local.getUTCDate())}T${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}`;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date).replace(', ', 'T');
 }
 
-// Convert a datetime-local string (entered as EST UTC-5) to UTC ISO string
+// Convert a datetime-local string (entered as Eastern) to UTC ISO string
 function easternLocalToUTC(datetimeLocal) {
-  // Treat the input as EST (UTC-5), so add 5 hours to get UTC
-  const estAsIfUtc = new Date(datetimeLocal + ':00Z');
-  return new Date(estAsIfUtc.getTime() + EST_OFFSET_MINUTES * 60000).toISOString();
+  const asUTC = new Date(datetimeLocal + ':00Z');
+  const easternParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(asUTC);
+  const easternHour = parseInt(easternParts.find(p => p.type === 'hour').value);
+  const easternMinute = parseInt(easternParts.find(p => p.type === 'minute').value);
+  const [inputH, inputM] = datetimeLocal.split('T')[1].split(':').map(Number);
+  const diffMinutes = (inputH * 60 + inputM) - (easternHour * 60 + easternMinute);
+  return new Date(asUTC.getTime() - diffMinutes * 60000).toISOString();
 }
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
