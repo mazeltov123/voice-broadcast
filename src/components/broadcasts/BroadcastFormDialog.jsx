@@ -153,7 +153,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
       delivered: 0,
       failed: 0,
       status: isScheduled ? "scheduled" : "draft",
-      scheduled_at: isScheduled ? new Date(form.scheduled_at).toISOString() : undefined,
+      scheduled_at: isScheduled ? easternLocalToUTC(form.scheduled_at) : undefined,
     });
   };
 
