@@ -37,13 +37,9 @@ function utcToEasternLocal(utcString) {
 
 // Convert a datetime-local string (entered as EST UTC-5) to UTC ISO string
 function easternLocalToUTC(datetimeLocal) {
-  return new Date(datetimeLocal + ':00Z').toISOString().replace(
-    /T(\d{2}):(\d{2})/,
-    (_, h, m) => {
-      const totalMinutes = parseInt(h) * 60 + parseInt(m) + EST_OFFSET_MINUTES;
-      return `T${String(Math.floor(totalMinutes / 60) % 24).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
-    }
-  );
+  // Treat the input as EST (UTC-5), so add 5 hours to get UTC
+  const estAsIfUtc = new Date(datetimeLocal + ':00Z');
+  return new Date(estAsIfUtc.getTime() + EST_OFFSET_MINUTES * 60000).toISOString();
 }
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
