@@ -165,7 +165,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
         } else {
           await telnyxCommand(callControlId, 'speak', {
             payload: 'Please record your message after the tone. Hang up when you are done.',
-            voice: 'female',
+            voice: 'male',
             language: 'en-US',
             client_state: encodeState({ mode: 'inbound_ivr', step: 'record_prompt', callerPhone }),
           });
