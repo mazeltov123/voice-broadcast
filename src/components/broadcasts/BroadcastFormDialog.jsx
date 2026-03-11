@@ -198,22 +198,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
 
           {form.target_mode === "groups" ? (
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label className="text-xs">Target Groups</Label>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 text-xs px-2"
-                  onClick={() => {
-                    const allIds = groups.map(g => g.id);
-                    const allSelected = allIds.every(id => form.target_groups.includes(id));
-                    setForm(prev => ({ ...prev, target_groups: allSelected ? [] : allIds }));
-                  }}
-                >
-                  {groups.every(g => form.target_groups.includes(g.id)) ? "Deselect All" : "Select All"}
-                </Button>
-              </div>
+              <Label className="text-xs">Target Groups</Label>
               <p className="text-[11px] text-muted-foreground">Leave empty to send to all active contacts</p>
               <div className="flex flex-wrap gap-2 mt-1">
                 {groups.map(g => (
