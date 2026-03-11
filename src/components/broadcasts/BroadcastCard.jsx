@@ -56,8 +56,11 @@ export default function BroadcastCard({ broadcast, onStart, onCancel, onMarkComp
                 <Button variant="outline" size="sm" className="h-7 text-xs text-blue-600" onClick={() => onViewReport(broadcast)}>
                   <BarChart2 className="h-3 w-3 mr-1" /> Live
                 </Button>
-                <Button variant="outline" size="sm" className="h-7 text-xs text-amber-600" onClick={() => onCancel(broadcast)}>
-                  <Pause className="h-3 w-3 mr-1" /> Cancel
+                <Button variant="outline" size="sm" className="h-7 text-xs text-emerald-600" onClick={() => onMarkComplete(broadcast)}>
+                  <CheckCircle className="h-3 w-3 mr-1" /> Complete
+                </Button>
+                <Button variant="outline" size="sm" className="h-7 text-xs text-rose-600" onClick={() => onCancel(broadcast)}>
+                  <Square className="h-3 w-3 mr-1" /> Stop
                 </Button>
               </>
             )}
