@@ -16,7 +16,8 @@ async function telnyxCommand(callControlId, action, body = {}) {
     }
   );
   if (!res.ok) {
-    console.error(`[CMD] ${action} error:`, await res.text());
+    const errText = await res.text();
+    console.error(`[CMD] ${action} error:`, errText);
   }
   return res.ok;
 }
@@ -34,8 +35,31 @@ function decodeState(encoded) {
   }
 }
 
+// Fetch broadcast playlist from DB (avoids storing large data in call state)
+async function fetchPlaylist(base44) {
+  const allBroadcasts = await base44.asServiceRole.entities.Broadcast.list('-created_date', 100);
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  const broadcasts = allBroadcasts.filter(b =>
+    b.status === 'completed' && new Date(b.created_date) >= oneYearAgo
+  );
+
+  if (broadcasts.length === 0) return [];
+
+  const audioFiles = await base44.asServiceRole.entities.AudioFile.list();
+  const audioMap = Object.fromEntries(audioFiles.map(a => [a.id, a]));
+
+  return broadcasts.map(b => ({
+    date: new Date(b.scheduled_at || b.created_date).toLocaleDateString('en-US', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    }),
+    audioUrl: audioMap[b.audio_file_id]?.file_url || '',
+    name: b.name || '',
+  })).filter(p => p.audioUrl);
+}
+
 // =============================================
-// INBOUND IVR HANDLER (Call Control commands)
+// INBOUND IVR HANDLER
 // =============================================
 async function handleInbound(eventType, payload, callControlId, state, base44) {
   const callerPhone = state.callerPhone || payload?.from || 'Unknown';
@@ -50,7 +74,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       recordAnnouncementUrl = settings[0].record_announcement_url || '';
     }
   } catch (err) {
-    console.log('[IVR] Could not fetch IvrSettings, using TTS fallback:', err.message);
+    console.log('[IVR] Could not fetch IvrSettings:', err.message);
   }
 
   switch (eventType) {
@@ -95,37 +119,11 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
 
       if (digits === '1') {
         try {
-          const allBroadcasts = await base44.asServiceRole.entities.Broadcast.list('-created_date', 100);
-          const oneYearAgo = new Date();
-          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-          const broadcasts = allBroadcasts.filter(b =>
-            b.status === 'completed' && new Date(b.created_date) >= oneYearAgo
-          );
-
-          if (broadcasts.length === 0) {
-            await telnyxCommand(callControlId, 'speak', {
-              payload: 'There are no broadcasts available from the past year. Goodbye.',
-              voice: 'female',
-              language: 'en-US',
-              client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
-            });
-            break;
-          }
-
-          const audioFiles = await base44.asServiceRole.entities.AudioFile.list();
-          const audioMap = Object.fromEntries(audioFiles.map(a => [a.id, a]));
-
-          const playlist = broadcasts.map(b => ({
-            date: new Date(b.scheduled_at || b.created_date).toLocaleDateString('en-US', {
-              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-            }),
-            audioUrl: audioMap[b.audio_file_id]?.file_url || '',
-            name: b.name || '',
-          })).filter(p => p.audioUrl);
+          const playlist = await fetchPlaylist(base44);
 
           if (playlist.length === 0) {
             await telnyxCommand(callControlId, 'speak', {
-              payload: 'No broadcast audio is available at this time. Goodbye.',
+              payload: 'There are no broadcasts available. Goodbye.',
               voice: 'female',
               language: 'en-US',
               client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
@@ -133,9 +131,11 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
             break;
           }
 
-          console.log(`[IVR] Playing ${playlist.length} broadcasts`);
+          console.log(`[IVR] Found ${playlist.length} broadcasts, playing first`);
+
+          // Play the first broadcast audio directly (no announcement)
           await telnyxCommand(callControlId, 'speak', {
-            payload: `You have ${playlist.length} broadcast${playlist.length !== 1 ? 's' : ''} from the past year. Playing most recent first. Broadcast from ${playlist[0].date}.`,
+            payload: `Playing broadcast from ${playlist[0].date}.`,
             voice: 'female',
             language: 'en-US',
             client_state: encodeState({
@@ -143,7 +143,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
               step: 'announce_broadcast',
               callerPhone,
               broadcastIndex: 0,
-              playlist,
+              totalBroadcasts: playlist.length,
             }),
           });
         } catch (err) {
@@ -157,14 +157,14 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
         }
       } else if (digits === '2') {
         if (recordAnnouncementUrl) {
-          console.log(`[IVR] Using custom record announcement: ${recordAnnouncementUrl}`);
+          console.log(`[IVR] Using custom record announcement`);
           await telnyxCommand(callControlId, 'playback_start', {
             audio_url: recordAnnouncementUrl,
             client_state: encodeState({ mode: 'inbound_ivr', step: 'record_announcement_playing', callerPhone }),
           });
         } else {
           await telnyxCommand(callControlId, 'speak', {
-            payload: 'Please record your message after the tone. The recording will stop after 5 seconds of silence, or hang up when you are done.',
+            payload: 'Please record your message after the tone. Hang up when you are done.',
             voice: 'female',
             language: 'en-US',
             client_state: encodeState({ mode: 'inbound_ivr', step: 'record_prompt', callerPhone }),
@@ -186,20 +186,35 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       console.log(`[IVR] Speak ended — step: ${step}`);
 
       if (step === 'announce_broadcast') {
-        const idx = state.broadcastIndex || 0;
-        const playlist = state.playlist || [];
-        if (idx < playlist.length && playlist[idx].audioUrl) {
-          await telnyxCommand(callControlId, 'playback_start', {
-            audio_url: playlist[idx].audioUrl,
-            client_state: encodeState({ ...state, step: 'playing_broadcast_audio' }),
-          });
-        } else {
-          await telnyxCommand(callControlId, 'speak', {
-            payload: 'You have reached the end of all broadcasts. Goodbye.',
-            voice: 'female',
-            language: 'en-US',
-            client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
-          });
+        // Fetch playlist again and play current broadcast audio
+        try {
+          const playlist = await fetchPlaylist(base44);
+          const idx = state.broadcastIndex || 0;
+
+          if (idx < playlist.length && playlist[idx].audioUrl) {
+            console.log(`[IVR] Playing broadcast ${idx + 1} audio: ${playlist[idx].audioUrl}`);
+            await telnyxCommand(callControlId, 'playback_start', {
+              audio_url: playlist[idx].audioUrl,
+              client_state: encodeState({
+                mode: 'inbound_ivr',
+                step: 'playing_broadcast',
+                callerPhone,
+                broadcastIndex: idx,
+                totalBroadcasts: playlist.length,
+              }),
+            });
+          } else {
+            console.log(`[IVR] No audio for broadcast ${idx}, ending`);
+            await telnyxCommand(callControlId, 'speak', {
+              payload: 'Goodbye.',
+              voice: 'female',
+              language: 'en-US',
+              client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
+            });
+          }
+        } catch (err) {
+          console.error('[IVR] Error playing broadcast:', err);
+          await telnyxCommand(callControlId, 'hangup', {});
         }
       } else if (step === 'record_prompt') {
         await telnyxCommand(callControlId, 'record_start', {
@@ -210,9 +225,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           timeout_secs: 5,
           client_state: encodeState({ mode: 'inbound_ivr', step: 'recording', callerPhone }),
         });
-      } else if (step === 'record_saved') {
-        await telnyxCommand(callControlId, 'hangup', {});
-      } else if (step === 'goodbye') {
+      } else if (step === 'record_saved' || step === 'goodbye') {
         await telnyxCommand(callControlId, 'hangup', {});
       }
       break;
@@ -223,7 +236,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       console.log(`[IVR] Playback ended — step: ${step}`);
 
       if (step === 'record_announcement_playing') {
-        // Custom record announcement finished, start recording
+        // Custom record announcement finished — start recording
         await telnyxCommand(callControlId, 'record_start', {
           format: 'mp3',
           channels: 'single',
@@ -232,25 +245,52 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           timeout_secs: 5,
           client_state: encodeState({ mode: 'inbound_ivr', step: 'recording', callerPhone }),
         });
-      } else {
-        // Broadcast playback ended — move to next or finish
+      } else if (step === 'playing_broadcast') {
+        // Broadcast audio finished — check if there's another one
         const idx = (state.broadcastIndex || 0) + 1;
-        const playlist = state.playlist || [];
-        if (idx < playlist.length) {
-          await telnyxCommand(callControlId, 'speak', {
-            payload: `Broadcast from ${playlist[idx].date}.`,
-            voice: 'female',
-            language: 'en-US',
-            client_state: encodeState({ ...state, step: 'announce_broadcast', broadcastIndex: idx }),
-          });
+        const total = state.totalBroadcasts || 0;
+
+        if (idx < total) {
+          // Re-fetch playlist for next broadcast
+          try {
+            const playlist = await fetchPlaylist(base44);
+            if (idx < playlist.length) {
+              await telnyxCommand(callControlId, 'speak', {
+                payload: `Next broadcast, from ${playlist[idx].date}.`,
+                voice: 'female',
+                language: 'en-US',
+                client_state: encodeState({
+                  mode: 'inbound_ivr',
+                  step: 'announce_broadcast',
+                  callerPhone,
+                  broadcastIndex: idx,
+                  totalBroadcasts: playlist.length,
+                }),
+              });
+            } else {
+              await telnyxCommand(callControlId, 'speak', {
+                payload: 'That was the last broadcast. Goodbye.',
+                voice: 'female',
+                language: 'en-US',
+                client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
+              });
+            }
+          } catch (err) {
+            console.error('[IVR] Error fetching next broadcast:', err);
+            await telnyxCommand(callControlId, 'hangup', {});
+          }
         } else {
           await telnyxCommand(callControlId, 'speak', {
-            payload: 'You have reached the end of all broadcasts. Goodbye.',
+            payload: 'That was the last broadcast. Goodbye.',
             voice: 'female',
             language: 'en-US',
             client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
           });
         }
+      } else {
+        // Unknown playback ended — just hang up safely
+        console.log(`[IVR] Unknown playback ended step: ${step}, hanging up`);
+        await telnyxCommand(callControlId, 'hangup', {});
       }
       break;
     }
@@ -291,7 +331,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
 }
 
 // =============================================
-// OUTBOUND BROADCAST HANDLER (existing logic)
+// OUTBOUND BROADCAST HANDLER
 // =============================================
 async function handleOutbound(eventType, payload, callControlId, state, base44) {
   const { broadcastId, contactName, phone, audioUrl, createdBy } = state;
@@ -391,7 +431,7 @@ async function handleOutbound(eventType, payload, callControlId, state, base44) 
 }
 
 // =============================================
-// MAIN HANDLER — routes inbound vs outbound
+// MAIN HANDLER
 // =============================================
 Deno.serve(async (req) => {
   const base44 = createClientFromRequest(req);
@@ -409,7 +449,7 @@ Deno.serve(async (req) => {
   const state = decodeState(payload?.client_state);
   const direction = payload?.direction;
 
-  console.log(`[EVENT] ${eventType} | direction: ${direction || 'n/a'} | mode: ${state.mode || 'outbound'}`);
+  console.log(`[EVENT] ${eventType} | direction: ${direction || 'n/a'} | mode: ${state.mode || 'outbound'} | step: ${state.step || 'none'}`);
 
   try {
     if (direction === 'incoming' || state.mode === 'inbound_ivr') {
