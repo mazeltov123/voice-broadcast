@@ -93,6 +93,9 @@ export default function Broadcasts() {
   const handleCancel = (broadcast) => {
     updateBroadcast.mutate({ id: broadcast.id, data: { status: "cancelled" } });
   };
+  const handleMarkComplete = (broadcast) => {
+    updateBroadcast.mutate({ id: broadcast.id, data: { status: "completed" } });
+  };
 
   const filtered = tab === "all" ? broadcasts : broadcasts.filter(b => b.status === tab);
 
