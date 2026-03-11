@@ -5,12 +5,10 @@ Deno.serve(async (req) => {
   const appId = Deno.env.get('BASE44_APP_ID');
   const baseUrl = `https://api.base44.app/api/apps/${appId}/functions/ivrPlayBroadcasts`;
 
-  // Parse index from query string or body
   const url = new URL(req.url);
   let index = parseInt(url.searchParams.get('index') || '0', 10);
-  let direction = url.searchParams.get('dir') || 'fwd';
 
-  // Also check POST body for DTMF digit
+  // Read digit from POST body if present
   let digit = '';
   if (req.method === 'POST') {
     try {
@@ -19,9 +17,11 @@ Deno.serve(async (req) => {
     } catch (_) {}
   }
 
-  // If # pressed, go back one
+  // # = go back, anything else = already at next index (set by caller)
+  // When gather posts here with index=N+1, if digit is # we go to N-1 instead
   if (digit === '#') {
-    index = Math.max(0, index - 1);
+    // Go back two (since index was already advanced by the action URL)
+    index = Math.max(0, index - 2);
   }
 
   const oneYearAgo = new Date();
@@ -53,10 +53,6 @@ Deno.serve(async (req) => {
       hour: 'numeric', minute: '2-digit', timeZone: 'America/New_York'
     });
 
-    const nextUrl = `${baseUrl}?index=${index + 1}`;
-    const prevUrl = `${baseUrl}?index=${index - 1}`;
-
-    // Intro for first message
     if (index === 0) {
       inner += `  <Say>You have ${broadcasts.length} broadcast${broadcasts.length !== 1 ? 's' : ''} from the past year. Playing most recent first.</Say>\n`;
     }
@@ -70,36 +66,28 @@ Deno.serve(async (req) => {
       inner += `  <Say>Audio is not available for this broadcast.</Say>\n`;
     }
 
-    // Navigation prompt
-    let navHint = 'Press any key to play the next message.';
-    if (!isFirst) navHint += ' Press pound to go back.';
-    if (isLast) navHint = 'This is the last message.' + (!isFirst ? ' Press pound to go back, or hang up.' : ' Goodbye.');
+    const nextUrl = `${baseUrl}?index=${index + 1}`;
 
-    inner += `  <Gather action="${nextUrl}" method="POST" numDigits="1" timeout="5" finishOnKey="">\n`;
-    inner += `    <Say>${navHint}</Say>\n`;
-    inner += `  </Gather>\n`;
-
-    // Handle # from gather action going to prev
-    if (!isFirst) {
-      // The gather action always goes to nextUrl, but we handle digit in that request
-      // So we use a single action URL that includes the next index and reads the digit
-      // Actually we need to pass current index so the next call can compute correctly
-    }
-
-    // If no input (timeout), auto-advance
     if (!isLast) {
+      let hint = 'Press any key to play the next message.';
+      if (!isFirst) hint += ' Press pound to go back.';
+
+      inner += `  <Gather action="${nextUrl}" method="POST" numDigits="1" timeout="5" finishOnKey="">\n`;
+      inner += `    <Say>${hint}</Say>\n`;
+      inner += `  </Gather>\n`;
+      // Timeout: auto-advance
       inner += `  <Redirect method="GET">${nextUrl}</Redirect>\n`;
     } else {
+      let hint = 'This is the last broadcast.';
+      if (!isFirst) hint += ' Press pound to go back, or hang up.';
+
+      inner += `  <Gather action="${nextUrl}" method="POST" numDigits="1" timeout="8" finishOnKey="">\n`;
+      inner += `    <Say>${hint}</Say>\n`;
+      inner += `  </Gather>\n`;
       inner += `  <Say>Goodbye.</Say>\n  <Hangup/>`;
     }
   }
 
-  // Fix: use a single action URL per-message that knows current index, reads digit
-  // Rewrite gather action to point to next index but carry current index so # goes back
-  const gatherActionUrl = `${baseUrl}?index=${index + 1}`;
-
-  // Replace the gather action with one that posts back here with the next index
-  // digit=# in body will cause index-- in that call
   const texml = `<?xml version="1.0" encoding="UTF-8"?>\n<Response>\n${inner}\n</Response>`;
 
   return new Response(texml, {
