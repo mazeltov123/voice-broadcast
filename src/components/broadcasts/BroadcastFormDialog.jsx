@@ -45,7 +45,7 @@ function easternLocalToUTC(datetimeLocal) {
   const easternMinute = parseInt(easternParts.find(p => p.type === 'minute').value);
   const [inputH, inputM] = datetimeLocal.split('T')[1].split(':').map(Number);
   const diffMinutes = (inputH * 60 + inputM) - (easternHour * 60 + easternMinute);
-  return new Date(asUTC.getTime() - diffMinutes * 60000).toISOString();
+  return new Date(asUTC.getTime() + diffMinutes * 60000).toISOString();
 }
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
