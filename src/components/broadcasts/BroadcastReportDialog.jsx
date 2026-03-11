@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Phone, Clock, CheckCircle2, XCircle, PhoneOff, PhoneMissed, Voicemail, Loader2, Play, Pause, Music, RefreshCw } from "lucide-react";
+import { Phone, Clock, CheckCircle2, XCircle, PhoneOff, PhoneMissed, Voicemail, Loader2, Play, Pause, Music, RefreshCw, Printer } from "lucide-react";
 import { format } from "date-fns";
 
 const statusColors = {
