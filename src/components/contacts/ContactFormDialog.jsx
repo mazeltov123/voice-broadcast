@@ -29,6 +29,7 @@ export default function ContactFormDialog({ open, onOpenChange, contact, groups,
     email: "",
     groups: [],
     status: "active",
+    sms_enabled: true,
     notes: "",
   });
 
@@ -41,10 +42,11 @@ export default function ContactFormDialog({ open, onOpenChange, contact, groups,
         email: contact.email || "",
         groups: contact.groups || [],
         status: contact.status || "active",
+        sms_enabled: contact.sms_enabled !== false,
         notes: contact.notes || "",
       });
     } else {
-      setForm({ first_name: "", last_name: "", phone_number: "", email: "", groups: [], status: "active", notes: "" });
+      setForm({ first_name: "", last_name: "", phone_number: "", email: "", groups: [], status: "active", sms_enabled: true, notes: "" });
     }
   }, [contact, open]);
 
