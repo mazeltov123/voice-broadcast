@@ -67,11 +67,11 @@ export default function BroadcastReportDialog({ broadcast, open, onOpenChange })
     }
   };
 
-  const { data: fetchedReports = [], isLoading } = useQuery({
+  const { data: fetchedReports = [], isLoading, refetch, isFetching } = useQuery({
     queryKey: ["callReports", broadcast?.id],
     queryFn: () => base44.entities.CallReport.filter({ broadcast_id: broadcast.id }, "-called_at"),
     enabled: !!broadcast?.id && open,
-    refetchInterval: broadcast?.status === "in_progress" ? 5000 : false,
+    refetchInterval: broadcast?.status === "in_progress" ? 15000 : false,
   });
 
   useEffect(() => {
