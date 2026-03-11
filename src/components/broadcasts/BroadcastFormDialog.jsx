@@ -413,7 +413,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
                     type="datetime-local"
                     className="pl-8"
                     value={form.scheduled_at}
-                    min={new Date(Date.now() + 5 * 60000).toISOString().slice(0, 16)}
+                    min={utcToEasternLocal(new Date(Date.now() + 5 * 60000).toISOString())}
                     onChange={e => setForm({ ...form, scheduled_at: e.target.value })}
                   />
                 </div>
