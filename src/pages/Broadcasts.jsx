@@ -159,6 +159,16 @@ export default function Broadcasts() {
         onSave={(data) => createBroadcast.mutate(data)}
       />
 
+      <BroadcastFormDialog
+        open={!!editBroadcast}
+        onOpenChange={(v) => { if (!v) setEditBroadcast(null); }}
+        audioFiles={audioFiles}
+        groups={groups}
+        contacts={contacts}
+        editBroadcast={editBroadcast}
+        onSave={handleSaveEdit}
+      />
+
       <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
