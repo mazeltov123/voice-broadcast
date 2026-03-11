@@ -38,11 +38,26 @@ export default function ContactTable({ contacts, groups, onEdit, onDelete, onSen
   return (
     <div className="rounded-xl border border-border/50 bg-white overflow-hidden">
       {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-border/50">
+        <div className="flex items-center justify-between px-4 py-2 bg-primary/5 border-b border-border/50 gap-3 flex-wrap">
           <span className="text-sm font-medium text-primary">{selectedIds.length} contact{selectedIds.length > 1 ? 's' : ''} selected</span>
-          <Button size="sm" onClick={onSendCalls} className="gap-2">
-            <PhoneCall className="h-4 w-4" /> Send Call to Selected
-          </Button>
+          <div className="flex items-center gap-2">
+            <Select onValueChange={(groupId) => onAssignGroup && onAssignGroup(selectedIds, groupId)}>
+              <SelectTrigger className="h-8 text-xs w-44">
+                <div className="flex items-center gap-1.5">
+                  <FolderPlus className="h-3.5 w-3.5" />
+                  <SelectValue placeholder="Assign to group..." />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {(groups || []).map(g => (
+                  <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button size="sm" onClick={onSendCalls} className="gap-2">
+              <PhoneCall className="h-4 w-4" /> Send Call
+            </Button>
+          </div>
         </div>
       )}
       <Table>
