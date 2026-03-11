@@ -406,7 +406,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
             </div>
             {scheduleEnabled && (
               <div className="space-y-1.5">
-                <Label className="text-xs text-muted-foreground">Send date & time (EST, UTC-5)</Label>
+                <Label className="text-xs text-muted-foreground">Send date & time (Eastern Time)</Label>
                 <div className="relative">
                   <Clock className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
