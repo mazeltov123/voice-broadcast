@@ -70,7 +70,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
     if (open) {
       if (editBroadcast) {
         const scheduledAt = editBroadcast.scheduled_at
-          ? new Date(editBroadcast.scheduled_at).toISOString().slice(0, 16)
+          ? utcToEasternLocal(editBroadcast.scheduled_at)
           : "";
         setForm({
           name: editBroadcast.name || "",
