@@ -131,12 +131,18 @@ export default function BroadcastReportDialog({ broadcast, open, onOpenChange })
               {isLive && <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse inline-block" />}
               {broadcast.name} — {isLive ? "Live Progress" : "Full Report"}
             </DialogTitle>
-            {isLive && (
-              <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-1.5 text-xs">
-                <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
-                Refresh
+            <div className="flex items-center gap-2">
+              {isLive && (
+                <Button variant="outline" size="sm" onClick={() => refetch()} disabled={isFetching} className="gap-1.5 text-xs">
+                  <RefreshCw className={`h-3.5 w-3.5 ${isFetching ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5 text-xs">
+                <Printer className="h-3.5 w-3.5" />
+                Print
               </Button>
-            )}
+            </div>
           </div>
         </DialogHeader>
 
