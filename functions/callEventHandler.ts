@@ -289,8 +289,8 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
         }
       } else {
         // Unknown playback ended — just hang up safely
-        console.log(`[IVR] Unknown playback ended step: ${step}, hanging up`);
-        await telnyxCommand(callControlId, 'hangup', {});
+        console.log(`[IVR] Ignoring playback ended for step: ${step}`);
+
       }
       break;
     }
