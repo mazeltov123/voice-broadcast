@@ -137,12 +137,16 @@ const phone = normalizePhone(rawPhone);
 const name = [contact.first_name, contact.last_name].filter(Boolean).join(' ') || 'there';
 console.log(`[PROCESS] ${name}: ${rawPhone} → ${phone}`);
 
-const smsText = `Hi ${name}, a new broadcast "${broadcastName}" has been created on VoiceCast. Stay tuned!`;
+const shouldSendSms = broadcast.broadcast_type === 'sms_only' || broadcast.broadcast_type === 'both';
+const shouldCall = (broadcast.broadcast_type === 'voice_only' || broadcast.broadcast_type === 'both') && audioUrl;
 
-const smsSent = await sendSMS(phone, smsText);
-if (smsSent) results.sms_sent++;
+if (shouldSendSms && contact.sms_enabled !== false) {
+  const smsText = broadcast.sms_message || `Hi ${name}, a new broadcast "${broadcastName}" has been sent on VoiceCast.`;
+  const smsSent = await sendSMS(phone, smsText);
+  if (smsSent) results.sms_sent++;
+}
 
-if (audioUrl) {
+if (shouldCall) {
 const callMade = await makeVoiceCall(phone, audioUrl, broadcastId, name, user.email);
 if (callMade) {
 results.calls_made++;
