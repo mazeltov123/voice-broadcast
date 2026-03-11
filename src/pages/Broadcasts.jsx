@@ -81,6 +81,12 @@ export default function Broadcasts() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["broadcasts"] }); setDeleteTarget(null); },
   });
 
+  const handleSaveEdit = (data) => {
+    updateBroadcast.mutate({ id: editBroadcast.id, data }, {
+      onSuccess: () => setEditBroadcast(null),
+    });
+  };
+
   const handleStart = (broadcast) => {
     updateBroadcast.mutate({ id: broadcast.id, data: { status: "in_progress" } });
   };
