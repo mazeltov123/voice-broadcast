@@ -46,11 +46,6 @@ export default function BroadcastCard({ broadcast, onStart, onCancel, onMarkComp
                 <Play className="h-3 w-3 mr-1" /> Start
               </Button>
             )}
-            {broadcast.status === "scheduled" && (
-              <Button variant="outline" size="sm" className="h-7 text-xs text-primary" onClick={() => onEdit(broadcast)}>
-                <Pencil className="h-3 w-3 mr-1" /> Edit
-              </Button>
-            )}
             {broadcast.status === "in_progress" && (
               <>
                 <Button variant="outline" size="sm" className="h-7 text-xs text-blue-600" onClick={() => onViewReport(broadcast)}>
@@ -69,6 +64,9 @@ export default function BroadcastCard({ broadcast, onStart, onCancel, onMarkComp
                 <BarChart2 className="h-3 w-3 mr-1" /> Report
               </Button>
             )}
+            <Button variant="outline" size="icon" className="h-7 w-7 text-primary" onClick={() => onEdit(broadcast)}>
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
             {(broadcast.status === "draft" || broadcast.status === "completed" || broadcast.status === "cancelled") && (
               <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => onDelete(broadcast)}>
                 <Trash2 className="h-3.5 w-3.5" />
