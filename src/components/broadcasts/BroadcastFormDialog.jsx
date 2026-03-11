@@ -30,7 +30,8 @@ function utcToEasternLocal(utcString) {
 }
 
 function easternLocalToUTC(datetimeLocal) {
-  return new Date(datetimeLocal).toISOString();
+  // Append Z so the browser doesn't shift it to UTC - store as-is
+  return datetimeLocal + ':00Z';
 }
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
