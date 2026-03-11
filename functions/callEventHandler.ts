@@ -165,7 +165,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
         } else {
           await telnyxCommand(callControlId, 'speak', {
             payload: 'Please record your message after the tone. Hang up when you are done.',
-            voice: 'male',
+            voice: 'female',
             language: 'en-US',
             client_state: encodeState({ mode: 'inbound_ivr', step: 'record_prompt', callerPhone }),
           });
@@ -288,9 +288,8 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           });
         }
       } else {
-        // Unknown playback ended — just hang up safely
-        console.log(`[IVR] Ignoring playback ended for step: ${step}`);
-
+        // Ignore playback events from gather_using_audio or other internal playback
+        console.log(`[IVR] Ignoring playback ended for step: ${step} (likely from gather_using_audio)`);
       }
       break;
     }
