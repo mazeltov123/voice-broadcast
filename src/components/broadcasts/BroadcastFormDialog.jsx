@@ -176,9 +176,35 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
             <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Weekly Update - Jan 15" />
           </div>
 
+          {/* Broadcast Type */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Broadcast Type *</Label>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: "voice_only", label: "Voice Only", icon: Phone },
+                { value: "sms_only", label: "SMS Only", icon: MessageSquare },
+                { value: "both", label: "Voice & SMS", icon: Users },
+              ].map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setForm({ ...form, broadcast_type: value })}
+                  className={`flex flex-col items-center gap-1.5 rounded-lg border p-3 text-xs font-medium transition-all ${
+                    form.broadcast_type === value
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label className="text-xs">Audio Message *</Label>
+              <Label className="text-xs">Audio Message {form.broadcast_type !== "sms_only" ? "*" : "(optional)"}</Label>
               <Button
                 type="button"
                 variant="ghost"
