@@ -136,7 +136,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Broadcast</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Broadcast" : "Create Broadcast"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-5 py-2">
           <div className="space-y-1.5">
