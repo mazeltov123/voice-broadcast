@@ -77,7 +77,9 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
           : "";
         setForm({
           name: editBroadcast.name || "",
+          broadcast_type: editBroadcast.broadcast_type || "voice_only",
           audio_file_id: editBroadcast.audio_file_id || "",
+          sms_message: editBroadcast.sms_message || "",
           target_mode: editBroadcast.target_mode || "groups",
           target_groups: editBroadcast.target_groups || [],
           target_contact_ids: editBroadcast.target_contact_ids || [],
