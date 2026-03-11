@@ -252,6 +252,21 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
             )}
           </div>
 
+          {/* SMS Message */}
+          {(form.broadcast_type === "sms_only" || form.broadcast_type === "both") && (
+            <div className="space-y-1.5">
+              <Label className="text-xs">SMS Message *</Label>
+              <Textarea
+                value={form.sms_message}
+                onChange={e => setForm({ ...form, sms_message: e.target.value })}
+                placeholder="Type your SMS message here..."
+                rows={3}
+                maxLength={160}
+              />
+              <p className="text-[11px] text-muted-foreground text-right">{(form.sms_message || "").length}/160 characters</p>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label className="text-xs">Target By</Label>
             <div className="flex gap-2">
