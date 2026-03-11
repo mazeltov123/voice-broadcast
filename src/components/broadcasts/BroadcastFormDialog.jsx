@@ -54,7 +54,9 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
 
   const [form, setForm] = useState({
     name: "",
+    broadcast_type: "voice_only",
     audio_file_id: "",
+    sms_message: "",
     target_mode: "groups",
     target_groups: [],
     target_contact_ids: [],
