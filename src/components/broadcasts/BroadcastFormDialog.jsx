@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { X, Music, Users, Search, Mic, Calendar, Clock } from "lucide-react";
+import { X, Music, Users, Search, Mic, Calendar, Clock, Phone, MessageSquare } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import VoiceRecorder from "./VoiceRecorder";
 
