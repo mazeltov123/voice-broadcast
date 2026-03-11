@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 
 export default function ContactFormDialog({ open, onOpenChange, contact, groups, onSave }) {
