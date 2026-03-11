@@ -433,7 +433,8 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
             onClick={handleSave}
             disabled={
               !form.name ||
-              !form.audio_file_id ||
+              (form.broadcast_type !== "sms_only" && !form.audio_file_id) ||
+              ((form.broadcast_type === "sms_only" || form.broadcast_type === "both") && !form.sms_message) ||
               (form.target_mode === "contacts" && form.target_contact_ids.length === 0) ||
               (scheduleEnabled && !form.scheduled_at)
             }
