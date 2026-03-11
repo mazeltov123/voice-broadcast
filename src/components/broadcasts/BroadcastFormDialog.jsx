@@ -232,7 +232,22 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
             </div>
           ) : (
             <div className="space-y-1.5">
-              <Label className="text-xs">Select Contacts</Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-xs">Select Contacts</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs px-2"
+                  onClick={() => {
+                    const allIds = activeContacts.map(c => c.id);
+                    const allSelected = allIds.every(id => form.target_contact_ids.includes(id));
+                    setForm(prev => ({ ...prev, target_contact_ids: allSelected ? [] : allIds }));
+                  }}
+                >
+                  {activeContacts.every(c => form.target_contact_ids.includes(c.id)) ? "Deselect All" : "Select All"}
+                </Button>
+              </div>
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
