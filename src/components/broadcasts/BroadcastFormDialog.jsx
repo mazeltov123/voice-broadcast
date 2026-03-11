@@ -25,28 +25,25 @@ import { Switch } from "@/components/ui/switch";
 import VoiceRecorder from "./VoiceRecorder";
 
 // Convert a UTC ISO string to a datetime-local value in Eastern time
+const EST_OFFSET_MINUTES = 5 * 60; // EST is always UTC-5
+
 function utcToEasternLocal(utcString) {
   const date = new Date(utcString);
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/New_York',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).format(date).replace(', ', 'T');
+  const estMs = date.getTime() - EST_OFFSET_MINUTES * 60000;
+  const local = new Date(estMs);
+  const pad = n => String(n).padStart(2, '0');
+  return `${local.getUTCFullYear()}-${pad(local.getUTCMonth() + 1)}-${pad(local.getUTCDate())}T${pad(local.getUTCHours())}:${pad(local.getUTCMinutes())}`;
 }
 
-// Convert a datetime-local string (entered as Eastern) to UTC ISO string
+// Convert a datetime-local string (entered as EST UTC-5) to UTC ISO string
 function easternLocalToUTC(datetimeLocal) {
-  // Treat input as UTC reference, then find the actual Eastern offset
-  const asUTC = new Date(datetimeLocal + ':00Z');
-  const easternParts = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'America/New_York',
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).formatToParts(asUTC);
-  const easternHour = parseInt(easternParts.find(p => p.type === 'hour').value);
-  const easternMinute = parseInt(easternParts.find(p => p.type === 'minute').value);
-  const [inputH, inputM] = datetimeLocal.split('T')[1].split(':').map(Number);
-  const diffMinutes = (inputH * 60 + inputM) - (easternHour * 60 + easternMinute);
-  return new Date(asUTC.getTime() - diffMinutes * 60000).toISOString();
+  return new Date(datetimeLocal + ':00Z').toISOString().replace(
+    /T(\d{2}):(\d{2})/,
+    (_, h, m) => {
+      const totalMinutes = parseInt(h) * 60 + parseInt(m) + EST_OFFSET_MINUTES;
+      return `T${String(Math.floor(totalMinutes / 60) % 24).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+    }
+  );
 }
 
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
