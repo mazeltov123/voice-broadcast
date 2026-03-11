@@ -87,6 +87,20 @@ export default function BroadcastCard({ broadcast, onStart, onCancel, onMarkComp
             </div>
           </div>
 
+          {broadcast.status === "scheduled" && broadcast.scheduled_at && (
+            <div className="bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-xs space-y-1">
+              <div className="flex items-center gap-1.5 text-amber-700 font-medium">
+                <Clock className="h-3 w-3" />
+                Scheduled for: {broadcast.scheduled_at.slice(0, 16).replace('T', ' ')}
+              </div>
+              {broadcast.created_date && (
+                <div className="text-amber-600/80">
+                  Created: {format(new Date(broadcast.created_date.endsWith('Z') ? broadcast.created_date : broadcast.created_date + 'Z'), "MMM d, yyyy h:mm a")}
+                </div>
+              )}
+            </div>
+          )}
+
           {(broadcast.target_group_names || []).length > 0 && (
             <div className="flex flex-wrap gap-1">
               {broadcast.target_group_names.map((name, i) => (
