@@ -119,6 +119,14 @@ export default function ContactFormDialog({ open, onOpenChange, contact, groups,
               )}
             </div>
           </div>
+          <div className="flex items-center gap-2 py-1">
+            <Checkbox
+              id="sms-enabled"
+              checked={form.sms_enabled}
+              onCheckedChange={v => setForm({ ...form, sms_enabled: !!v })}
+            />
+            <Label htmlFor="sms-enabled" className="text-xs cursor-pointer">Can receive SMS messages</Label>
+          </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Notes</Label>
             <Textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} placeholder="Optional notes..." rows={2} />
