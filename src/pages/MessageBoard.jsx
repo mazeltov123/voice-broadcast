@@ -57,7 +57,9 @@ export default function MessageBoard() {
   useEffect(() => {
     if (playingUrl && audioRef.current) {
       audioRef.current.load();
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {
+        setPlayingUrl(null);
+      });
     }
   }, [playingUrl]);
 
