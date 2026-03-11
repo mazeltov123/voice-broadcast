@@ -25,6 +25,7 @@ export default function Broadcasts() {
   const { data: currentUser } = useCurrentUser();
   const isAdmin = currentUser?.role === "admin";
   const [createDialog, setCreateDialog] = useState(false);
+  const [editBroadcast, setEditBroadcast] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [reportBroadcast, setReportBroadcast] = useState(null);
   const [tab, setTab] = useState("all");
