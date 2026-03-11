@@ -23,7 +23,9 @@ import { X, Music, Users, Search, Mic, Calendar, Clock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import VoiceRecorder from "./VoiceRecorder";
 
-export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave }) {
+export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
+  const isEditing = !!editBroadcast;
+
   const [form, setForm] = useState({
     name: "",
     audio_file_id: "",
@@ -41,22 +43,40 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
 
   useEffect(() => {
     if (open) {
-      setForm({
-        name: "",
-        audio_file_id: "",
-        target_mode: "groups",
-        target_groups: [],
-        target_contact_ids: [],
-        throttle_mode: "throttled",
-        calls_per_minute: 10,
-        status: "draft",
-        scheduled_at: "",
-      });
+      if (editBroadcast) {
+        const scheduledAt = editBroadcast.scheduled_at
+          ? new Date(editBroadcast.scheduled_at).toISOString().slice(0, 16)
+          : "";
+        setForm({
+          name: editBroadcast.name || "",
+          audio_file_id: editBroadcast.audio_file_id || "",
+          target_mode: editBroadcast.target_mode || "groups",
+          target_groups: editBroadcast.target_groups || [],
+          target_contact_ids: editBroadcast.target_contact_ids || [],
+          throttle_mode: editBroadcast.throttle_mode || "throttled",
+          calls_per_minute: editBroadcast.calls_per_minute || 10,
+          status: editBroadcast.status || "draft",
+          scheduled_at: scheduledAt,
+        });
+        setScheduleEnabled(!!scheduledAt);
+      } else {
+        setForm({
+          name: "",
+          audio_file_id: "",
+          target_mode: "groups",
+          target_groups: [],
+          target_contact_ids: [],
+          throttle_mode: "throttled",
+          calls_per_minute: 10,
+          status: "draft",
+          scheduled_at: "",
+        });
+        setScheduleEnabled(false);
+      }
       setContactSearch("");
       setShowRecorder(false);
-      setScheduleEnabled(false);
     }
-  }, [open]);
+  }, [open, editBroadcast]);
 
   const toggleGroup = (groupId) => {
     setForm(prev => ({
