@@ -138,6 +138,7 @@ export default function Broadcasts() {
               onCancel={handleCancel}
               onDelete={setDeleteTarget}
               onViewReport={setReportBroadcast}
+              onEdit={setEditBroadcast}
             />
           ))}
         </div>
