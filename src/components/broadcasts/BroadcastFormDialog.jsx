@@ -23,6 +23,31 @@ import { X, Music, Users, Search, Mic, Calendar, Clock } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import VoiceRecorder from "./VoiceRecorder";
 
+// Convert a UTC ISO string to a datetime-local value in Eastern time
+function utcToEasternLocal(utcString) {
+  const date = new Date(utcString);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).format(date).replace(', ', 'T');
+}
+
+// Convert a datetime-local string (entered as Eastern) to UTC ISO string
+function easternLocalToUTC(datetimeLocal) {
+  // Treat input as UTC reference, then find the actual Eastern offset
+  const asUTC = new Date(datetimeLocal + ':00Z');
+  const easternParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(asUTC);
+  const easternHour = parseInt(easternParts.find(p => p.type === 'hour').value);
+  const easternMinute = parseInt(easternParts.find(p => p.type === 'minute').value);
+  const [inputH, inputM] = datetimeLocal.split('T')[1].split(':').map(Number);
+  const diffMinutes = (inputH * 60 + inputM) - (easternHour * 60 + easternMinute);
+  return new Date(asUTC.getTime() - diffMinutes * 60000).toISOString();
+}
+
 export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [], groups = [], contacts = [], onSave, editBroadcast = null }) {
   const isEditing = !!editBroadcast;
 
