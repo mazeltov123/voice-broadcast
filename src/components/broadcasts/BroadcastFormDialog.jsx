@@ -365,7 +365,7 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles = [
               (scheduleEnabled && !form.scheduled_at)
             }
           >
-            {scheduleEnabled && form.scheduled_at ? "Schedule Broadcast" : "Create Broadcast"}
+            {isEditing ? "Save Changes" : scheduleEnabled && form.scheduled_at ? "Schedule Broadcast" : "Create Broadcast"}
           </Button>
         </DialogFooter>
       </DialogContent>
