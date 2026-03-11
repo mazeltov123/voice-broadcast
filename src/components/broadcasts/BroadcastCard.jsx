@@ -14,7 +14,7 @@ const statusConfig = {
   cancelled: { label: "Cancelled", color: "bg-rose-50 text-rose-700 border-rose-200", icon: XCircle },
 };
 
-export default function BroadcastCard({ broadcast, onStart, onCancel, onDelete, onViewReport, onEdit }) {
+export default function BroadcastCard({ broadcast, onStart, onCancel, onMarkComplete, onDelete, onViewReport, onEdit }) {
   const total = broadcast.total_recipients || 0;
   const delivered = broadcast.delivered || 0;
   const failed = broadcast.failed || 0;

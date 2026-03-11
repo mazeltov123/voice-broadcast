@@ -139,6 +139,7 @@ export default function Broadcasts() {
               broadcast={b}
               onStart={handleStart}
               onCancel={handleCancel}
+              onMarkComplete={handleMarkComplete}
               onDelete={setDeleteTarget}
               onViewReport={setReportBroadcast}
               onEdit={setEditBroadcast}
