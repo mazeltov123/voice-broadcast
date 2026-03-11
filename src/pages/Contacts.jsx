@@ -129,6 +129,21 @@ export default function Contacts() {
     e.target.value = "";
   };
 
+  const handleAssignGroup = async (contactIds, groupId) => {
+    const loadingToast = toast.loading(`Assigning ${contactIds.length} contact(s) to group...`);
+    await Promise.all(
+      contactIds.map(id => {
+        const contact = contacts.find(c => c.id === id);
+        if (!contact) return Promise.resolve();
+        const updatedGroups = [...new Set([...(contact.groups || []), groupId])];
+        return base44.entities.Contact.update(id, { groups: updatedGroups });
+      })
+    );
+    queryClient.invalidateQueries({ queryKey: ["contacts"] });
+    setSelectedContactIds([]);
+    toast.success(`Assigned ${contactIds.length} contact(s) to group`, { id: loadingToast });
+  };
+
   const handleSendCalls = async () => {
     if (selectedContactIds.length === 0) return;
     setSendingCalls(true);
