@@ -227,6 +227,21 @@ export default function BroadcastFormDialog({ open, onOpenChange, audioFiles, gr
                   onChange={e => setContactSearch(e.target.value)}
                 />
               </div>
+              <div className="flex items-center gap-3 px-3 py-2 border border-border rounded-lg bg-muted/30">
+                <Checkbox
+                  checked={filteredContacts.length > 0 && filteredContacts.every(c => form.target_contact_ids.includes(c.id))}
+                  onCheckedChange={(checked) => {
+                    const ids = filteredContacts.map(c => c.id);
+                    setForm(prev => ({
+                      ...prev,
+                      target_contact_ids: checked
+                        ? [...new Set([...prev.target_contact_ids, ...ids])]
+                        : prev.target_contact_ids.filter(id => !ids.includes(id))
+                    }));
+                  }}
+                />
+                <span className="text-sm font-medium">Select all ({filteredContacts.length})</span>
+              </div>
               <div className="border border-border rounded-lg max-h-48 overflow-y-auto divide-y divide-border/50">
                 {filteredContacts.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-4">No active contacts found</p>
