@@ -55,6 +55,7 @@ import Contacts from './pages/Contacts';
 import Dashboard from './pages/Dashboard';
 import MessageBoard from './pages/MessageBoard';
 import Analytics from './pages/Analytics';
+import TelnyxCallLog from './pages/TelnyxCallLog';
 import __Layout from './Layout.jsx';
 
 
@@ -67,6 +68,7 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "MessageBoard": MessageBoard,
     "Analytics": Analytics,
+    "TelnyxCallLog": TelnyxCallLog,
 }
 
 export const pagesConfig = {
