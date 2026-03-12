@@ -28,7 +28,6 @@ const navItems = [
   { name: "Message Board", icon: PhoneIncoming, page: "MessageBoard" },
   { name: "Call Reports", icon: FileText, page: "CallReport" },
   { name: "Analytics", icon: BarChart2, page: "Analytics" },
-  { name: "Call Log Import", icon: PhoneIncoming, page: "TelnyxCallLog" },
 ];
 
 export default function Layout({ children, currentPageName }) {
