@@ -181,6 +181,18 @@ export default function Contacts() {
           <Button size="sm" variant="outline" onClick={() => { setEditingGroup(null); setGroupDialog(true); }}>
             <FolderOpen className="h-4 w-4 mr-1.5" /> New Group
           </Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            const headers = ["first_name", "last_name", "phone_number", "email", "status", "notes"];
+            const rows = contacts.map(c => headers.map(h => `"${(c[h] || "").toString().replace(/"/g, '""')}"`).join(","));
+            const csv = [headers.join(","), ...rows].join("\n");
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url; a.download = "contacts.csv"; a.click();
+            URL.revokeObjectURL(url);
+          }}>
+            <Download className="h-4 w-4 mr-1.5" /> Export
+          </Button>
           <Button size="sm" onClick={() => { setEditingContact(null); setContactDialog(true); }}>
             <Plus className="h-4 w-4 mr-1.5" /> Add Contact
           </Button>
