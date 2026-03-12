@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { base44 } from "@/api/base44Client";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, PhoneIncoming, Info, MessageSquare } from "lucide-react";
+import { Search, PhoneIncoming, Info, MessageSquare, Download } from "lucide-react";
 import InboundMessageRow from "@/components/messageboard/InboundMessageRow";
 import InboundSmsRow from "@/components/messageboard/InboundSmsRow";
+import ImportCallHistoryDialog from "@/components/messageboard/ImportCallHistoryDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 
