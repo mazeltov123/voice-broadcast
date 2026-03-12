@@ -82,10 +82,21 @@ export default function MessageBoard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Message Board</h1>
-        <p className="text-sm text-muted-foreground mt-1">Inbound calls and SMS messages</p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Message Board</h1>
+          <p className="text-sm text-muted-foreground mt-1">Inbound calls and SMS messages</p>
+        </div>
+        <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowImport(true)}>
+          <Download className="h-4 w-4" />
+          Import Call History
+        </Button>
       </div>
+      <ImportCallHistoryDialog
+        open={showImport}
+        onClose={() => setShowImport(false)}
+        onImported={() => queryClient.invalidateQueries({ queryKey: ["inbound"] })}
+      />
 
       {/* Section toggle */}
       <div className="flex gap-2">
