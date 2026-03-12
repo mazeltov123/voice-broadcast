@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Plus, Search, Upload, Users, FolderOpen, Trash2, Pencil } from "lucide-react";
+import { Plus, Search, Upload, Users, FolderOpen, Trash2, Pencil, Download } from "lucide-react";
 import ContactFormDialog from "@/components/contacts/ContactFormDialog";
 import GroupFormDialog from "@/components/contacts/GroupFormDialog";
 import ContactTable from "@/components/contacts/ContactTable";
