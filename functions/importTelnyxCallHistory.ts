@@ -13,14 +13,13 @@ Deno.serve(async (req) => {
   }
 
   const body = await req.json().catch(() => ({}));
-  const pageSize = body.page_size || 100;
+  const pageSize = Math.min(body.page_size || 250, 250);
 
-  // Fetch CDR (call detail records) from Telnyx reporting API
-  // This endpoint returns all completed calls
-  const url = new URL("https://api.telnyx.com/v2/reports/cdrs");
-  url.searchParams.set("filter[call_direction]", "inbound");
+  // Fetch recordings from Telnyx — each recording corresponds to a call
+  const url = new URL("https://api.telnyx.com/v2/recordings");
   url.searchParams.set("page[size]", String(pageSize));
-  if (FROM_NUMBER) url.searchParams.set("filter[called_number]", FROM_NUMBER);
+  // Filter to calls TO our number (inbound)
+  if (FROM_NUMBER) url.searchParams.set("filter[to]", FROM_NUMBER);
 
   const telnyxRes = await fetch(url.toString(), {
     headers: {
@@ -38,50 +37,45 @@ Deno.serve(async (req) => {
   const records = telnyxData.data || [];
 
   if (records.length === 0) {
-    return Response.json({ imported: 0, skipped: 0, message: "No call records found in Telnyx" });
+    return Response.json({ imported: 0, skipped: 0, total_fetched: 0, message: "No recordings found in Telnyx" });
   }
 
-  // Load existing telnyx_call_control_ids to avoid duplicates
+  // Load existing records to avoid duplicates
   const existing = await base44.asServiceRole.entities.InboundMessage.list("-created_date", 500);
-  const existingIds = new Set(existing.map(m => m.telnyx_call_control_id).filter(Boolean));
-  const existingPhoneDates = new Set(
-    existing.map(m => `${m.caller_phone}__${m.called_at ? m.called_at.substring(0, 16) : ""}`)
-  );
+  const existingCallIds = new Set(existing.map(m => m.telnyx_call_control_id).filter(Boolean));
 
   let imported = 0;
   let skipped = 0;
 
   for (const record of records) {
-    const callId = record.call_leg_id || record.id || null;
-    const callerPhone = record.calling_number || record.from || null;
-    const calledAt = record.start_time || record.created_at || null;
+    const callControlId = record.call_control_id || null;
+    const callLegId = record.call_leg_id || null;
 
-    // Skip duplicates
-    if (callId && existingIds.has(callId)) { skipped++; continue; }
-    const dedupeKey = `${callerPhone}__${calledAt ? calledAt.substring(0, 16) : ""}`;
-    if (existingPhoneDates.has(dedupeKey)) { skipped++; continue; }
+    // Deduplicate by call_control_id
+    if (callControlId && existingCallIds.has(callControlId)) { skipped++; continue; }
 
-    const durationSecs = record.duration_secs != null
-      ? parseInt(record.duration_secs)
-      : (record.billing_secs != null ? parseInt(record.billing_secs) : 0);
+    const durationMs = record.duration_millis || 0;
+    const durationSecs = Math.round(durationMs / 1000);
+    const calledAt = record.recording_started_at || record.created_at || null;
+    const recordingUrl = record.download_urls?.mp3 || record.download_urls?.wav || null;
 
-    const callStatus = record.hangup_cause === "NORMAL_CLEARING"
-      ? "answered"
-      : record.hangup_cause
-        ? record.hangup_cause.toLowerCase().replace(/_/g, " ")
-        : "unknown";
+    // Determine outcome based on duration
+    let callOutcome = "hung_up_early";
+    if (durationSecs >= 30) callOutcome = "listened_to_broadcasts";
+    else if (durationSecs >= 5) callOutcome = "no_selection";
 
     await base44.asServiceRole.entities.InboundMessage.create({
-      caller_phone: callerPhone || "unknown",
+      caller_phone: record.from || "unknown",
       caller_name: null,
       duration_seconds: durationSecs,
       called_at: calledAt,
-      telnyx_call_control_id: callId,
-      call_outcome: durationSecs > 10 ? "listened_to_broadcasts" : "hung_up_early",
+      recording_url: recordingUrl,
+      telnyx_call_control_id: callControlId || callLegId,
+      call_outcome: callOutcome,
       status: "reviewed",
-      ivr_selections: record.hangup_cause || null,
     });
 
+    if (callControlId) existingCallIds.add(callControlId);
     imported++;
   }
 
@@ -90,5 +84,6 @@ Deno.serve(async (req) => {
     skipped,
     total_fetched: records.length,
     message: `Imported ${imported} call records, skipped ${skipped} duplicates.`,
+    meta: telnyxData.meta || null,
   });
 });
