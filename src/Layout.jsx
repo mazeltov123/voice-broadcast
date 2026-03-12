@@ -14,6 +14,7 @@ import {
   FileText,
   ShieldCheck,
   LogOut,
+  BarChart2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCurrentUser } from "@/components/useCurrentUser";
