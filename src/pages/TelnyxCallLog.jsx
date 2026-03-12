@@ -1,22 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Phone, PhoneIncoming, PhoneOutgoing, Download, RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { Phone, PhoneIncoming, PhoneOutgoing, Download, RefreshCw, CheckCircle2, AlertCircle, Loader2, Clock } from "lucide-react";
 import { format, parseISO } from "date-fns";
-
-const statusColor = {
-  answered: "bg-emerald-100 text-emerald-700",
-  no_answer: "bg-yellow-100 text-yellow-700",
-  busy: "bg-orange-100 text-orange-700",
-  failed: "bg-red-100 text-red-700",
-};
 
 function formatDuration(secs) {
   if (!secs) return "0s";
-  const m = Math.floor(secs / 60);
-  const s = secs % 60;
+  const n = parseInt(secs, 10);
+  if (isNaN(n)) return secs;
+  const m = Math.floor(n / 60);
+  const s = n % 60;
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
@@ -28,50 +22,107 @@ function formatDate(d) {
 export default function TelnyxCallLog() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [importLoading, setImportLoading] = useState(false);
+  const [pollingStatus, setPollingStatus] = useState(null); // null | "pending" | "complete" | "failed"
   const [error, setError] = useState(null);
   const [importResult, setImportResult] = useState(null);
   const [direction, setDirection] = useState("inbound");
+  const pollRef = useRef(null);
+
+  const stopPolling = () => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  };
+
+  const pollReport = (reportId) => {
+    let attempts = 0;
+    const maxAttempts = 30; // up to ~5 minutes
+    pollRef.current = setInterval(async () => {
+      attempts++;
+      if (attempts > maxAttempts) {
+        stopPolling();
+        setLoading(false);
+        setPollingStatus("failed");
+        setError("Report timed out. Telnyx may still be generating it — try again in a few minutes.");
+        return;
+      }
+      const res = await base44.functions.invoke("importTelnyxCallLogs", { report_id: reportId });
+      const data = res.data;
+      if (data.status === "complete") {
+        stopPolling();
+        setLoading(false);
+        setPollingStatus("complete");
+        setRecords(data.records || []);
+      } else if (data.status === "failed") {
+        stopPolling();
+        setLoading(false);
+        setPollingStatus("failed");
+        setError("Telnyx report generation failed.");
+      }
+      // else still pending, keep polling
+    }, 10000); // poll every 10s
+  };
 
   const fetchLogs = async () => {
+    stopPolling();
     setLoading(true);
     setError(null);
     setImportResult(null);
-    const res = await base44.functions.invoke("importTelnyxCallLogs", {
-      direction,
-      page_size: 100,
-      import_records: false,
-    });
-    setLoading(false);
-    if (res.data?.error) {
-      setError(res.data.error + (res.data.details ? ": " + res.data.details : ""));
+    setRecords([]);
+    setPollingStatus("pending");
+
+    const res = await base44.functions.invoke("importTelnyxCallLogs", { direction });
+    const data = res.data;
+
+    if (data?.error) {
+      setError(data.error);
+      setLoading(false);
+      setPollingStatus(null);
+      return;
+    }
+
+    if (data?.report_id) {
+      pollReport(data.report_id);
     } else {
-      setRecords(res.data?.records || []);
+      setLoading(false);
+      setPollingStatus(null);
+      setError("Unexpected response from Telnyx.");
     }
   };
 
-  const importLogs = async () => {
-    setImportLoading(true);
-    setError(null);
-    const res = await base44.functions.invoke("importTelnyxCallLogs", {
-      direction,
-      page_size: 100,
-      import_records: true,
-    });
-    setImportLoading(false);
-    if (res.data?.error) {
-      setError(res.data.error + (res.data.details ? ": " + res.data.details : ""));
-    } else {
-      setImportResult(res.data);
-      setRecords(res.data?.records || []);
+  const importToMessageBoard = async () => {
+    if (!records.length) return;
+    setLoading(true);
+    const existing = await base44.entities.InboundMessage.list("-created_date", 1000);
+    const existingIds = new Set(existing.map(m => m.telnyx_call_control_id).filter(Boolean));
+
+    const toCreate = records
+      .filter(r => {
+        const id = r.call_leg_id || r.id || r["Call Leg ID"];
+        return id && !existingIds.has(id);
+      })
+      .map(r => ({
+        caller_phone: r.cli || r.from || r["CLI"] || "unknown",
+        broadcast_name: "Telnyx Import",
+        duration_seconds: parseInt(r.duration || r.duration_secs || r["Duration"] || "0", 10) || 0,
+        call_outcome: "no_selection",
+        telnyx_call_control_id: r.call_leg_id || r.id || r["Call Leg ID"],
+        called_at: r.start_time || r["Start Time"] || new Date().toISOString(),
+        status: "reviewed",
+      }));
+
+    if (toCreate.length > 0) {
+      await base44.entities.InboundMessage.bulkCreate(toCreate);
     }
+    setLoading(false);
+    setImportResult({ imported: toCreate.length, total: records.length });
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Telnyx Call Log Import</h1>
-        <p className="text-sm text-muted-foreground mt-1">Fetch historical call records from your Telnyx account</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Fetch historical call records from Telnyx and optionally import them into the Message Board
+        </p>
       </div>
 
       <Card>
@@ -85,25 +136,36 @@ export default function TelnyxCallLog() {
                   direction === d ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                {d === "inbound" ? <span className="flex items-center gap-1"><PhoneIncoming className="h-3.5 w-3.5" /> Inbound</span>
-                  : d === "outbound" ? <span className="flex items-center gap-1"><PhoneOutgoing className="h-3.5 w-3.5" /> Outbound</span>
-                  : <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> Both</span>}
+                {d === "inbound" && <span className="flex items-center gap-1"><PhoneIncoming className="h-3.5 w-3.5" /> Inbound</span>}
+                {d === "outbound" && <span className="flex items-center gap-1"><PhoneOutgoing className="h-3.5 w-3.5" /> Outbound</span>}
+                {d === "both" && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" /> Both</span>}
               </button>
             ))}
           </div>
 
           <div className="flex gap-2 ml-auto">
-            <Button variant="outline" onClick={fetchLogs} disabled={loading || importLoading}>
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              {loading ? "Fetching..." : "Preview Logs"}
+            <Button variant="outline" onClick={fetchLogs} disabled={loading}>
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {loading ? "Generating report..." : "Fetch Logs"}
             </Button>
-            <Button onClick={importLogs} disabled={loading || importLoading}>
-              <Download className={`h-4 w-4 ${importLoading ? "animate-spin" : ""}`} />
-              {importLoading ? "Importing..." : "Import to Message Board"}
-            </Button>
+            {records.length > 0 && (
+              <Button onClick={importToMessageBoard} disabled={loading}>
+                <Download className="h-4 w-4" />
+                Import to Message Board
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {pollingStatus === "pending" && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardContent className="p-4 flex items-center gap-2 text-blue-700 text-sm">
+            <Clock className="h-4 w-4 shrink-0 animate-pulse" />
+            Telnyx is generating your report — this usually takes 30–90 seconds. Checking every 10 seconds...
+          </CardContent>
+        </Card>
+      )}
 
       {error && (
         <Card className="border-red-200 bg-red-50">
@@ -118,7 +180,7 @@ export default function TelnyxCallLog() {
         <Card className="border-emerald-200 bg-emerald-50">
           <CardContent className="p-4 flex items-center gap-2 text-emerald-700 text-sm">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
-            Successfully imported <strong>{importResult.imported}</strong> new records out of{" "}
+            Imported <strong>{importResult.imported}</strong> new records out of{" "}
             <strong>{importResult.total}</strong> fetched. Duplicates skipped.
           </CardContent>
         </Card>
@@ -127,7 +189,7 @@ export default function TelnyxCallLog() {
       {records.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">{records.length} Call Records</CardTitle>
+            <CardTitle className="text-base">{records.length} Call Records (last 90 days)</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -143,27 +205,33 @@ export default function TelnyxCallLog() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {records.map((r, i) => {
-                    const isInbound = r.call_direction === "incoming";
-                    const status = r.hangup_cause?.toLowerCase() === "normal_clearing" ? "answered"
-                      : r.hangup_cause?.toLowerCase().includes("no_answer") ? "no_answer"
-                      : r.hangup_cause?.toLowerCase().includes("busy") ? "busy"
-                      : r.duration_secs > 0 ? "answered" : "no_answer";
+                  {records.slice(0, 200).map((r, i) => {
+                    const from = r.cli || r.from || r["CLI"] || r["From"] || "—";
+                    const to = r.cld || r.to || r["CLD"] || r["To"] || "—";
+                    const date = r.start_time || r["Start Time"] || r.created_at || "";
+                    const duration = r.duration || r.duration_secs || r["Duration"] || "0";
+                    const callType = r.call_type || r["Call Type"] || "";
+                    const isInbound = callType === "1" || callType === "Inbound" || String(callType).toLowerCase().includes("inbound");
+                    const status = r.status || r["Status"] || (parseInt(duration) > 0 ? "answered" : "no_answer");
+                    const statusBg = status === "answered" || status === "Completed" ? "bg-emerald-100 text-emerald-700"
+                      : status === "no_answer" ? "bg-yellow-100 text-yellow-700"
+                      : status === "busy" ? "bg-orange-100 text-orange-700"
+                      : "bg-slate-100 text-slate-600";
 
                     return (
-                      <tr key={r.id || i} className="hover:bg-muted/30 transition-colors">
+                      <tr key={i} className="hover:bg-muted/30 transition-colors">
                         <td className="px-4 py-2.5">
                           {isInbound
                             ? <span className="flex items-center gap-1 text-blue-600"><PhoneIncoming className="h-3.5 w-3.5" /> Inbound</span>
                             : <span className="flex items-center gap-1 text-violet-600"><PhoneOutgoing className="h-3.5 w-3.5" /> Outbound</span>}
                         </td>
-                        <td className="px-4 py-2.5 font-mono text-xs">{r.from || r.caller_id_number || "—"}</td>
-                        <td className="px-4 py-2.5 font-mono text-xs">{r.to || r.destination || "—"}</td>
-                        <td className="px-4 py-2.5 text-muted-foreground">{formatDate(r.start_time || r.created_at)}</td>
-                        <td className="px-4 py-2.5">{formatDuration(r.duration_secs || 0)}</td>
+                        <td className="px-4 py-2.5 font-mono text-xs">{from}</td>
+                        <td className="px-4 py-2.5 font-mono text-xs">{to}</td>
+                        <td className="px-4 py-2.5 text-muted-foreground">{formatDate(date)}</td>
+                        <td className="px-4 py-2.5">{formatDuration(duration)}</td>
                         <td className="px-4 py-2.5">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[status] || "bg-slate-100 text-slate-600"}`}>
-                            {status.replace("_", " ")}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${statusBg}`}>
+                            {status}
                           </span>
                         </td>
                       </tr>
@@ -171,15 +239,19 @@ export default function TelnyxCallLog() {
                   })}
                 </tbody>
               </table>
+              {records.length > 200 && (
+                <p className="text-xs text-muted-foreground p-4">Showing first 200 of {records.length} records</p>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
-      {!loading && records.length === 0 && !error && (
+      {!loading && records.length === 0 && pollingStatus !== "pending" && !error && (
         <div className="text-center py-16 text-muted-foreground">
           <Phone className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Click "Preview Logs" to fetch call records from Telnyx</p>
+          <p className="text-sm">Click "Fetch Logs" to request call records from Telnyx</p>
+          <p className="text-xs mt-1 opacity-70">Telnyx generates a report asynchronously — usually ready in under 2 minutes</p>
         </div>
       )}
     </div>
