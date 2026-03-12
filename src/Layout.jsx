@@ -27,6 +27,7 @@ const navItems = [
   { name: "Broadcasts", icon: Radio, page: "Broadcasts" },
   { name: "Message Board", icon: PhoneIncoming, page: "MessageBoard" },
   { name: "Call Reports", icon: FileText, page: "CallReport" },
+  { name: "Analytics", icon: BarChart2, page: "Analytics" },
 ];
 
 export default function Layout({ children, currentPageName }) {
