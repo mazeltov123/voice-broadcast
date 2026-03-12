@@ -9,6 +9,7 @@ import InboundSmsRow from "@/components/messageboard/InboundSmsRow";
 import ImportCallHistoryDialog from "@/components/messageboard/ImportCallHistoryDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function MessageBoard() {
   const queryClient = useQueryClient();
