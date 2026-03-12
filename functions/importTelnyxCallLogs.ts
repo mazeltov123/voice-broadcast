@@ -58,7 +58,6 @@ Deno.serve(async (req) => {
     : [1, 2];
 
   const reportRes = await telnyxPost("/legacy_reporting/batch_detail_records/voice", apiKey, {
-
     start_time: body.start_time || startTime,
     end_time: body.end_time || endTime,
     call_types: callTypes,
