@@ -70,6 +70,10 @@ Deno.serve(async (req) => {
 
   const report = reportRes.data;
   return Response.json({ status: "pending", report_id: report.id });
+  } catch (err) {
+    console.error("importTelnyxCallLogs error:", err);
+    return Response.json({ error: err.message }, { status: 500 });
+  }
 });
 
 function parseCsv(csvText) {
