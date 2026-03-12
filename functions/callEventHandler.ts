@@ -343,6 +343,36 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
 
     case 'call.hangup': {
       console.log(`[IVR] Inbound call from ${callerPhone} ended`);
+      try {
+        const startTime = payload?.start_time ? new Date(payload.start_time) : null;
+        const endTime = payload?.end_time ? new Date(payload.end_time) : null;
+        const durationSeconds = startTime && endTime
+          ? Math.round((endTime.getTime() - startTime.getTime()) / 1000)
+          : 0;
+
+        // Determine outcome from last known step
+        let call_outcome = 'hung_up_early';
+        if (state.step === 'playing_broadcast' || state.step === 'announce_broadcast') {
+          call_outcome = 'listened_to_broadcasts';
+        } else if (state.step === 'recording' || state.step === 'record_saved') {
+          call_outcome = 'recorded_message';
+        } else if (state.step === 'menu') {
+          call_outcome = 'no_selection';
+        }
+
+        // Find and update the call log record
+        const existing = await base44.asServiceRole.entities.InboundMessage.filter({
+          telnyx_call_control_id: callControlId,
+        });
+        if (existing.length > 0) {
+          await base44.asServiceRole.entities.InboundMessage.update(existing[0].id, {
+            duration_seconds: durationSeconds,
+            call_outcome,
+          });
+        }
+      } catch (err) {
+        console.error('[IVR] Error updating call log on hangup:', err.message);
+      }
       break;
     }
 
