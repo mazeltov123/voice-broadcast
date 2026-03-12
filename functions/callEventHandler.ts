@@ -93,7 +93,24 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
     }
 
     case 'call.answered': {
-      console.log(`[IVR] Call answered — playing menu`);
+      console.log(`[IVR] Call answered — logging call`);
+      // Log the call immediately on answer
+      try {
+        const contacts = await base44.asServiceRole.entities.Contact.filter({ phone_number: callerPhone });
+        const callerName = contacts[0] ? `${contacts[0].first_name || ''} ${contacts[0].last_name || ''}`.trim() : '';
+        await base44.asServiceRole.entities.InboundMessage.create({
+          caller_phone: callerPhone,
+          caller_name: callerName || undefined,
+          called_at: new Date().toISOString(),
+          telnyx_call_control_id: callControlId,
+          status: 'new',
+          call_outcome: 'no_selection',
+        });
+        console.log('[IVR] Inbound call logged');
+      } catch (err) {
+        console.error('[IVR] Error logging call:', err.message);
+      }
+      console.log(`[IVR] Playing menu`);
       if (greetingUrl) {
         console.log(`[IVR] Using custom greeting: ${greetingUrl}`);
         await telnyxCommand(callControlId, 'gather_using_audio', {
