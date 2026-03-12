@@ -49,6 +49,22 @@ Deno.serve(async (req) => {
     return Response.json({ status: "pending" });
   }
 
+  // Probe to find working endpoints
+  if (body._probe_endpoint) {
+    const path = body._probe_endpoint;
+    const method = body._method || "GET";
+    const probeBody = body._body;
+    const url = `${TELNYX_API_BASE}${path}`;
+    const opts = {
+      method,
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    };
+    if (probeBody) opts.body = JSON.stringify(probeBody);
+    const res = await fetch(url, opts);
+    const text = await res.text();
+    return Response.json({ status: res.status, body: text.slice(0, 2000) });
+  }
+
   // Step 2: Create a new CDR report request
   // Default: last 90 days
   const endTime = new Date().toISOString();
@@ -62,7 +78,7 @@ Deno.serve(async (req) => {
     start_time: body.start_time || startTime,
     end_time: body.end_time || endTime,
     call_types: callTypes,
-    record_types: [1, 2], // complete + incomplete
+    record_types: [1, 2],
     report_name: "VoiceCast Import",
     source: "calls",
     include_all_metadata: true,
