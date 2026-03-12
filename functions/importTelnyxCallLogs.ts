@@ -58,7 +58,7 @@ Deno.serve(async (req) => {
     : body.direction === "outbound" ? [2]
     : [1, 2];
 
-  const reportRes = await telnyxPost("/legacy_reporting/batch_detail_records/voice", apiKey, {
+  const reportRes = await telnyxPost("/reporting/cdr_detailed_records", apiKey, {
     start_time: body.start_time || startTime,
     end_time: body.end_time || endTime,
     call_types: callTypes,
