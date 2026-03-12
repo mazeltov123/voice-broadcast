@@ -322,14 +322,27 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       console.log(`[IVR] Recording saved: ${recordingUrl}`);
       if (recordingUrl) {
         try {
-          await base44.asServiceRole.entities.InboundMessage.create({
-            caller_phone: callerPhone,
-            recording_url: recordingUrl,
-            status: 'new',
+          const existing = await base44.asServiceRole.entities.InboundMessage.filter({
+            telnyx_call_control_id: callControlId,
           });
-          console.log('[IVR] InboundMessage created');
+          if (existing.length > 0) {
+            await base44.asServiceRole.entities.InboundMessage.update(existing[0].id, {
+              recording_url: recordingUrl,
+              call_outcome: 'recorded_message',
+            });
+          } else {
+            await base44.asServiceRole.entities.InboundMessage.create({
+              caller_phone: callerPhone,
+              recording_url: recordingUrl,
+              telnyx_call_control_id: callControlId,
+              call_outcome: 'recorded_message',
+              called_at: new Date().toISOString(),
+              status: 'new',
+            });
+          }
+          console.log('[IVR] Recording saved to call log');
         } catch (err) {
-          console.error('[IVR] Error saving inbound message:', err);
+          console.error('[IVR] Error saving recording:', err);
         }
       }
       await telnyxCommand(callControlId, 'speak', {
