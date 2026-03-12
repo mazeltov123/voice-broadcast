@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
 
   // Step 1: If a report_id is provided, check its status
   if (body.report_id) {
-    const reportData = await telnyxGet(`/legacy_reporting/batch_detail_records/voice/${body.report_id}`, apiKey);
+    const reportData = await telnyxGet(`/reporting/cdr_detailed_records/${body.report_id}`, apiKey);
     const report = reportData.data;
     // status: 1=pending, 2=complete, 3=failed
     if (report.status === 2 && report.report_url) {
