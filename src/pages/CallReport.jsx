@@ -29,6 +29,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Phone, Clock, Plus, Search, Trash2, PhoneIncoming, PhoneOutgoing } from "lucide-react";
 import { format } from "date-fns";
 
