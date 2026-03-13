@@ -156,6 +156,21 @@ export default function CallReportPage() {
     return matchSearch && matchBroadcast && matchStatus && matchDirection;
   });
 
+  const allFilteredSelected = filtered.length > 0 && filtered.every((r) => selectedIds.includes(r.id));
+  const someSelected = selectedIds.length > 0;
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((r) => r.id));
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
   // Summary stats
   const answered = filtered.filter((r) => r.call_status === "answered");
   const totalDuration = answered.reduce((sum, r) => sum + (r.duration_seconds || 0), 0);
