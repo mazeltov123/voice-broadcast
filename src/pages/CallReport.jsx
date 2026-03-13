@@ -217,6 +217,16 @@ export default function CallReportPage() {
             ))}
           </SelectContent>
         </Select>
+        <Select value={filterDirection} onValueChange={setFilterDirection}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="All Directions" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Directions</SelectItem>
+            <SelectItem value="outgoing">Outgoing</SelectItem>
+            <SelectItem value="incoming">Incoming</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
