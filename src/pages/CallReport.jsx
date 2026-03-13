@@ -300,6 +300,20 @@ export default function CallReportPage() {
             <SelectItem value="incoming">Incoming</SelectItem>
           </SelectContent>
         </Select>
+        <Input
+          type="date"
+          className="w-40"
+          value={filterDateFrom}
+          onChange={(e) => setFilterDateFrom(e.target.value)}
+          placeholder="From date"
+        />
+        <Input
+          type="date"
+          className="w-40"
+          value={filterDateTo}
+          onChange={(e) => setFilterDateTo(e.target.value)}
+          placeholder="To date"
+        />
       </div>
 
       {/* Table */}
