@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCurrentUser } from "@/components/useCurrentUser";
@@ -332,7 +332,7 @@ export default function CallReportPage() {
                        onCheckedChange={() => toggleSelect(report.id)}
                      />
                    </TableCell>
-                   <TableCell className="font-medium">{report.contact_name || "—"}</TableCell>
+                   <TableCell className="font-medium">{getContactName(report)}</TableCell>
                     <TableCell className="text-muted-foreground">{report.phone_number}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{report.broadcast_name || "—"}</TableCell>
                     <TableCell>
