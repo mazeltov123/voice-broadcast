@@ -69,6 +69,7 @@ export default function CallReportPage() {
     broadcast_name: "",
     contact_name: "",
     phone_number: "",
+    direction: "outgoing",
     call_status: "answered",
     duration_seconds: "",
     called_at: new Date().toISOString().slice(0, 16),
