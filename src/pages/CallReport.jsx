@@ -84,6 +84,8 @@ export default function CallReportPage() {
       ? base44.entities.CallReport.list("-called_at")
       : base44.entities.CallReport.filter({ created_by: currentUser?.email }, "-called_at"),
     enabled: !!currentUser,
+    staleTime: 30000,
+    refetchOnWindowFocus: false,
   });
 
   const { data: broadcasts = [] } = useQuery({
@@ -92,6 +94,8 @@ export default function CallReportPage() {
       ? base44.entities.Broadcast.list()
       : base44.entities.Broadcast.filter({ created_by: currentUser?.email }),
     enabled: !!currentUser,
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
   });
 
   const createMutation = useMutation({
