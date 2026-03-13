@@ -302,7 +302,13 @@ export default function CallReportPage() {
               ) : (
                 filtered.map((report) => (
                   <TableRow key={report.id}>
-                    <TableCell className="font-medium">{report.contact_name || "—"}</TableCell>
+                   <TableCell>
+                     <Checkbox
+                       checked={selectedIds.includes(report.id)}
+                       onCheckedChange={() => toggleSelect(report.id)}
+                     />
+                   </TableCell>
+                   <TableCell className="font-medium">{report.contact_name || "—"}</TableCell>
                     <TableCell className="text-muted-foreground">{report.phone_number}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{report.broadcast_name || "—"}</TableCell>
                     <TableCell>
