@@ -41,14 +41,15 @@ async function fetchPlaylist(base44) {
   const oneYearAgo = new Date();
   oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
   const now = new Date();
-const broadcasts = allBroadcasts.filter(b => {
-const createdAt = new Date(b.created_date);
-const scheduledAt = b.scheduled_at ? new Date(b.scheduled_at) : null;
-const isStarted = b.status === 'completed' || b.status === 'in_progress';
-const isNotFuture = !scheduledAt || scheduledAt <= now;
-return isStarted && isNotFuture && createdAt >= oneYearAgo;
-});
-  
+  const broadcasts = allBroadcasts.filter(b => {
+    const createdAt = new Date(b.created_date);
+    const scheduledAt = b.scheduled_at ? new Date(b.scheduled_at) : null;
+    // Include completed OR in_progress broadcasts from the past year
+    // Exclude future scheduled broadcasts that haven't started yet
+    const isStarted = b.status === 'completed' || b.status === 'in_progress';
+    const isNotFuture = !scheduledAt || scheduledAt <= now;
+    return isStarted && isNotFuture && createdAt >= oneYearAgo;
+  });
 
   if (broadcasts.length === 0) return [];
 
@@ -93,24 +94,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
     }
 
     case 'call.answered': {
-      console.log(`[IVR] Call answered — logging call`);
-      // Log the call immediately on answer
-      try {
-        const contacts = await base44.asServiceRole.entities.Contact.filter({ phone_number: callerPhone });
-        const callerName = contacts[0] ? `${contacts[0].first_name || ''} ${contacts[0].last_name || ''}`.trim() : '';
-        await base44.asServiceRole.entities.InboundMessage.create({
-          caller_phone: callerPhone,
-          caller_name: callerName || undefined,
-          called_at: new Date().toISOString(),
-          telnyx_call_control_id: callControlId,
-          status: 'new',
-          call_outcome: 'no_selection',
-        });
-        console.log('[IVR] Inbound call logged');
-      } catch (err) {
-        console.error('[IVR] Error logging call:', err.message);
-      }
-      console.log(`[IVR] Playing menu`);
+      console.log(`[IVR] Call answered — playing menu`);
       if (greetingUrl) {
         console.log(`[IVR] Using custom greeting: ${greetingUrl}`);
         await telnyxCommand(callControlId, 'gather_using_audio', {
@@ -124,7 +108,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       } else {
         await telnyxCommand(callControlId, 'gather_using_speak', {
           payload: 'Welcome to Voice Cast. Press 1 to listen to previous broadcasts. Press 2 to record and send a new message.',
-          voice: 'male',
+          voice: 'female',
           language: 'en-US',
           minimum_digits: 1,
           maximum_digits: 1,
@@ -147,7 +131,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           if (playlist.length === 0) {
             await telnyxCommand(callControlId, 'speak', {
               payload: 'There are no broadcasts available. Goodbye.',
-              voice: 'male',
+              voice: 'female',
               language: 'en-US',
               client_state: encodeState({ mode: 'inbound_ivr', step: 'goodbye', callerPhone }),
             });
@@ -322,27 +306,14 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
       console.log(`[IVR] Recording saved: ${recordingUrl}`);
       if (recordingUrl) {
         try {
-          const existing = await base44.asServiceRole.entities.InboundMessage.filter({
-            telnyx_call_control_id: callControlId,
+          await base44.asServiceRole.entities.InboundMessage.create({
+            caller_phone: callerPhone,
+            recording_url: recordingUrl,
+            status: 'new',
           });
-          if (existing.length > 0) {
-            await base44.asServiceRole.entities.InboundMessage.update(existing[0].id, {
-              recording_url: recordingUrl,
-              call_outcome: 'recorded_message',
-            });
-          } else {
-            await base44.asServiceRole.entities.InboundMessage.create({
-              caller_phone: callerPhone,
-              recording_url: recordingUrl,
-              telnyx_call_control_id: callControlId,
-              call_outcome: 'recorded_message',
-              called_at: new Date().toISOString(),
-              status: 'new',
-            });
-          }
-          console.log('[IVR] Recording saved to call log');
+          console.log('[IVR] InboundMessage created');
         } catch (err) {
-          console.error('[IVR] Error saving recording:', err);
+          console.error('[IVR] Error saving inbound message:', err);
         }
       }
       await telnyxCommand(callControlId, 'speak', {
@@ -356,35 +327,37 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
 
     case 'call.hangup': {
       console.log(`[IVR] Inbound call from ${callerPhone} ended`);
+
+      // Log inbound call to CallReport so it appears in Base44 app
       try {
+        const hangupCause = payload?.hangup_cause || 'unknown';
         const startTime = payload?.start_time ? new Date(payload.start_time) : null;
         const endTime = payload?.end_time ? new Date(payload.end_time) : null;
         const durationSeconds = startTime && endTime
           ? Math.round((endTime.getTime() - startTime.getTime()) / 1000)
           : 0;
 
-        // Determine outcome from last known step
-        let call_outcome = 'hung_up_early';
-        if (state.step === 'playing_broadcast' || state.step === 'announce_broadcast') {
-          call_outcome = 'listened_to_broadcasts';
-        } else if (state.step === 'recording' || state.step === 'record_saved') {
-          call_outcome = 'recorded_message';
-        } else if (state.step === 'menu') {
-          call_outcome = 'no_selection';
+        let callStatus = 'failed';
+        if (hangupCause === 'normal_clearing' || hangupCause === 'originator_cancel') {
+          callStatus = durationSeconds > 0 ? 'answered' : 'no_answer';
+        } else if (hangupCause === 'user_busy') {
+          callStatus = 'busy';
+        } else if (['no_answer', 'timeout', 'call_rejected'].includes(hangupCause)) {
+          callStatus = 'no_answer';
         }
 
-        // Find and update the call log record
-        const existing = await base44.asServiceRole.entities.InboundMessage.filter({
-          telnyx_call_control_id: callControlId,
+        await base44.asServiceRole.entities.CallReport.create({
+          broadcast_id: '',
+          contact_name: callerPhone,
+          phone_number: callerPhone,
+          call_status: callStatus,
+          duration_seconds: durationSeconds,
+          called_at: startTime ? startTime.toISOString() : new Date().toISOString(),
+          created_by: 'inbound',
         });
-        if (existing.length > 0) {
-          await base44.asServiceRole.entities.InboundMessage.update(existing[0].id, {
-            duration_seconds: durationSeconds,
-            call_outcome,
-          });
-        }
+        console.log(`[IVR] Inbound CallReport created for ${callerPhone}`);
       } catch (err) {
-        console.error('[IVR] Error updating call log on hangup:', err.message);
+        console.error('[IVR] Error creating inbound CallReport:', err);
       }
       break;
     }
@@ -414,7 +387,7 @@ async function handleOutbound(eventType, payload, callControlId, state, base44) 
       } else {
         await telnyxCommand(callControlId, 'speak', {
           payload: 'You have a new voice broadcast from VoiceCast. Please check the system for details.',
-          voice: 'male',
+          voice: 'female',
           language: 'en-US',
           client_state: encodeState(state),
         });
