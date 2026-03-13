@@ -85,16 +85,21 @@ export default function CallReportPage() {
     refetchOnWindowFocus: false,
   });
 
-  const contactByPhone = React.useMemo(() => {
+  const contactByPhone = useMemo(() => {
     const map = {};
     contacts.forEach((c) => {
-      if (c.phone_number) map[c.phone_number] = `${c.first_name} ${c.last_name || ""}`.trim();
+      if (c.phone_number) {
+        const key = c.phone_number.replace(/\D/g, "").slice(-9);
+        map[key] = `${c.first_name} ${c.last_name || ""}`.trim();
+      }
     });
     return map;
   }, [contacts]);
 
-  const getContactName = (report) =>
-    contactByPhone[report.phone_number] || report.contact_name || "—";
+  const getContactName = (report) => {
+    const key = report.phone_number?.replace(/\D/g, "").slice(-9);
+    return (key && contactByPhone[key]) || report.contact_name || "—";
+  };
 
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["callReports", currentUser?.email],
