@@ -183,10 +183,22 @@ export default function CallReportPage() {
           <h1 className="text-2xl font-semibold">Call Reports</h1>
           <p className="text-sm text-muted-foreground mt-1">Track who picked up and call duration per broadcast</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Report
-        </Button>
+        <div className="flex gap-2">
+          {someSelected && (
+            <Button
+              variant="destructive"
+              onClick={() => bulkDeleteMutation.mutate(selectedIds)}
+              disabled={bulkDeleteMutation.isPending}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete {selectedIds.length} Selected
+            </Button>
+          )}
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Report
+          </Button>
+        </div>
       </div>
 
       {/* Summary cards */}
