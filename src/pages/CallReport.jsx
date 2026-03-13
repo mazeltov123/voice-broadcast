@@ -238,6 +238,7 @@ export default function CallReportPage() {
                 <TableHead>Contact</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Broadcast</TableHead>
+                <TableHead>Direction</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Duration</TableHead>
                 <TableHead>Called At</TableHead>
