@@ -338,6 +338,18 @@ export default function CallReportPage() {
                 onChange={(e) => setForm((f) => ({ ...f, phone_number: e.target.value }))}
               />
             </div>
+            <div className="space-y-1">
+              <Label>Direction</Label>
+              <Select value={form.direction} onValueChange={(v) => setForm((f) => ({ ...f, direction: v }))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="outgoing">Outgoing</SelectItem>
+                  <SelectItem value="incoming">Incoming</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label>Call Status *</Label>
