@@ -184,7 +184,10 @@ export default function CallReportPage() {
     const matchBroadcast = filterBroadcast === "all" || r.broadcast_id === filterBroadcast;
     const matchStatus = filterStatus === "all" || r.call_status === filterStatus;
     const matchDirection = filterDirection === "all" || (r.direction || "outgoing") === filterDirection;
-    return matchSearch && matchBroadcast && matchStatus && matchDirection;
+    const callDate = r.called_at ? new Date(r.called_at) : null;
+    const matchDateFrom = !filterDateFrom || (callDate && callDate >= new Date(filterDateFrom));
+    const matchDateTo = !filterDateTo || (callDate && callDate <= new Date(filterDateTo + "T23:59:59"));
+    return matchSearch && matchBroadcast && matchStatus && matchDirection && matchDateFrom && matchDateTo;
   });
 
   const allFilteredSelected = filtered.length > 0 && filtered.every((r) => selectedIds.includes(r.id));
