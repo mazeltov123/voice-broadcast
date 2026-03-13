@@ -108,6 +108,31 @@ export default function CallReportPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["callReports"] }),
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids) => {
+      await Promise.all(ids.map((id) => base44.entities.CallReport.delete(id)));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["callReports"] });
+      setSelectedIds([]);
+    },
+  });
+
+  const allFilteredSelected = filtered.length > 0 && filtered.every((r) => selectedIds.includes(r.id));
+  const someSelected = selectedIds.length > 0;
+
+  const toggleSelectAll = () => {
+    if (allFilteredSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((r) => r.id));
+    }
+  };
+
+  const toggleSelect = (id) => {
+    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  };
+
   const resetForm = () => {
     setForm({
       broadcast_id: "",
