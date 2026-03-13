@@ -140,7 +140,8 @@ export default function CallReportPage() {
       r.phone_number?.includes(search);
     const matchBroadcast = filterBroadcast === "all" || r.broadcast_id === filterBroadcast;
     const matchStatus = filterStatus === "all" || r.call_status === filterStatus;
-    return matchSearch && matchBroadcast && matchStatus;
+    const matchDirection = filterDirection === "all" || (r.direction || "outgoing") === filterDirection;
+    return matchSearch && matchBroadcast && matchStatus && matchDirection;
   });
 
   // Summary stats
