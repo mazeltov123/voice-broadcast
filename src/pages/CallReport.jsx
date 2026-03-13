@@ -62,6 +62,7 @@ export default function CallReportPage() {
   const [search, setSearch] = useState("");
   const [filterBroadcast, setFilterBroadcast] = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterDirection, setFilterDirection] = useState("all");
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({
     broadcast_id: "",
