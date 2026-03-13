@@ -78,6 +78,24 @@ export default function CallReportPage() {
     notes: "",
   });
 
+  const { data: contacts = [] } = useQuery({
+    queryKey: ["contacts"],
+    queryFn: () => base44.entities.Contact.list(),
+    staleTime: 60000,
+    refetchOnWindowFocus: false,
+  });
+
+  const contactByPhone = React.useMemo(() => {
+    const map = {};
+    contacts.forEach((c) => {
+      if (c.phone_number) map[c.phone_number] = `${c.first_name} ${c.last_name || ""}`.trim();
+    });
+    return map;
+  }, [contacts]);
+
+  const getContactName = (report) =>
+    contactByPhone[report.phone_number] || report.contact_name || "—";
+
   const { data: reports = [], isLoading } = useQuery({
     queryKey: ["callReports", currentUser?.email],
     queryFn: () => isAdmin
