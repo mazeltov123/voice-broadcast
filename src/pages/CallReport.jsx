@@ -261,6 +261,17 @@ export default function CallReportPage() {
                     <TableCell className="text-muted-foreground">{report.phone_number}</TableCell>
                     <TableCell className="text-muted-foreground text-sm">{report.broadcast_name || "—"}</TableCell>
                     <TableCell>
+                      {(report.direction || "outgoing") === "incoming" ? (
+                        <Badge className="bg-purple-100 text-purple-700 flex items-center gap-1 w-fit">
+                          <PhoneIncoming className="h-3 w-3" /> Incoming
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-sky-100 text-sky-700 flex items-center gap-1 w-fit">
+                          <PhoneOutgoing className="h-3 w-3" /> Outgoing
+                        </Badge>
+                      )}
+                    </TableCell>
+                    <TableCell>
                       <Badge className={statusColors[report.call_status]}>
                         {statusLabels[report.call_status]}
                       </Badge>
