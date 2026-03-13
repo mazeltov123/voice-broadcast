@@ -354,6 +354,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           duration_seconds: durationSeconds,
           called_at: startTime ? startTime.toISOString() : new Date().toISOString(),
           created_by: 'inbound',
+          direction: 'incoming',
         });
         console.log(`[IVR] Inbound CallReport created for ${callerPhone}`);
       } catch (err) {
