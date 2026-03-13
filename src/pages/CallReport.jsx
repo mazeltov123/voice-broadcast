@@ -29,7 +29,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Phone, Clock, Plus, Search, Trash2 } from "lucide-react";
+import { Phone, Clock, Plus, Search, Trash2, PhoneIncoming, PhoneOutgoing } from "lucide-react";
 import { format } from "date-fns";
 
 const statusColors = {
