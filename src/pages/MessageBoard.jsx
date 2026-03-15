@@ -55,11 +55,8 @@ export default function MessageBoard() {
       return;
     }
     try {
-      const response = await base44.functions.invoke("proxyRecording", { recording_url: message.recording_url });
-      // response.data is the raw audio — but since invoke returns JSON, we need a blob URL
-      // Instead, fetch the proxy endpoint directly via fetch with a signed approach
-      // We'll store the original URL and let the audio element proxy via a blob
-      const res = await fetch(`/api/functions/proxyRecording`, {
+      const appId = import.meta.env.VITE_APP_ID || window.__BASE44_APP_ID__;
+      const res = await fetch(`https://preview--smoky-voice-broadcast-now.base44.app/functions/proxyRecording`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recording_url: message.recording_url }),
@@ -70,7 +67,6 @@ export default function MessageBoard() {
       const blobUrl = URL.createObjectURL(blob);
       setPlayingUrl(blobUrl);
     } catch {
-      // fallback: try direct URL
       setPlayingUrl(message.recording_url);
     }
   };
