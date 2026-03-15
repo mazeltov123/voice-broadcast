@@ -55,8 +55,7 @@ export default function MessageBoard() {
       return;
     }
     try {
-      const appId = import.meta.env.VITE_APP_ID || window.__BASE44_APP_ID__;
-      const res = await fetch(`https://preview--smoky-voice-broadcast-now.base44.app/functions/proxyRecording`, {
+      const res = await fetch(`${window.location.origin}/functions/proxyRecording`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recording_url: message.recording_url }),
