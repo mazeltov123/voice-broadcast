@@ -177,7 +177,7 @@ export default function InboundMessageRow({ message, onStatusChange, onDelete, o
               <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
         </div>
       </div>
       {showPlayer && message.recording_url && (
