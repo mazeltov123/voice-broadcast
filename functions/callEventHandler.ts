@@ -317,21 +317,20 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
           if (mp3Response.ok) {
             const arrayBuffer = await mp3Response.arrayBuffer();
             const bytes = new Uint8Array(arrayBuffer);
-            // Convert to base64 data URI for permanent storage
-            let binary = '';
-            for (let i = 0; i < bytes.length; i++) {
-              binary += String.fromCharCode(bytes[i]);
-            }
-            const base64 = btoa(binary);
-            permanentUrl = `data:audio/mpeg;base64,${base64}`;
-            console.log(`[IVR] Recording downloaded and converted (${bytes.length} bytes)`);
+            console.log(`[IVR] Recording downloaded (${bytes.length} bytes), uploading to Base44...`);
+
+            // Upload to Base44 file storage for a permanent URL
+            const timestamp = Date.now();
+            const fileName = `voicemail_${callerPhone.replace(/\+/g, '')}_${timestamp}.mp3`;
+            const file = new File([bytes], fileName, { type: 'audio/mpeg' });
+            const uploadResult = await base44.asServiceRole.integrations.Core.UploadFile({ file });
+            permanentUrl = uploadResult?.data?.file_url || uploadResult?.file_url || '';
+            console.log(`[IVR] Recording uploaded to Base44: ${permanentUrl}`);
           } else {
             console.error(`[IVR] Failed to download recording: HTTP ${mp3Response.status}`);
-            permanentUrl = recordingUrl; // Fallback to original URL
           }
         } catch (err) {
-          console.error('[IVR] Error downloading recording:', err.message);
-          permanentUrl = recordingUrl; // Fallback to original URL
+          console.error('[IVR] Error uploading recording:', err.message);
         }
       }
 
@@ -342,7 +341,7 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
             recording_url: permanentUrl,
             status: 'new',
           });
-          console.log('[IVR] InboundMessage created with permanent recording');
+          console.log('[IVR] InboundMessage created with permanent recording URL');
         } catch (err) {
           console.error('[IVR] Error saving inbound message:', err);
         }
