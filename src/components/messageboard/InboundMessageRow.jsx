@@ -178,7 +178,11 @@ export default function InboundMessageRow({ message, onStatusChange, onDelete, o
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
+      {showPlayer && message.recording_url && (
+        <InlinePlayer audioUrl={message.recording_url} />
+      )}
     </div>
   );
 }
