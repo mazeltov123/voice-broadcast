@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Archive, PhoneIncoming, Clock, Play, Radio, Mic, PhoneOff, HelpCircle } from "lucide-react";
+import { MoreHorizontal, Eye, Archive, PhoneIncoming, Clock, Play, Radio, Mic, PhoneOff, HelpCircle, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 
 const statusStyles = {
@@ -25,7 +25,7 @@ function formatDuration(seconds) {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
-export default function InboundMessageRow({ message, onStatusChange, onPlay }) {
+export default function InboundMessageRow({ message, onStatusChange, onPlay, onDelete }) {
   const outcome = message.call_outcome ? outcomeConfig[message.call_outcome] : null;
   const OutcomeIcon = outcome?.icon;
 
