@@ -1,9 +1,84 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Archive, PhoneIncoming, Clock, Play, Radio, Mic, PhoneOff, HelpCircle, Trash2, Download } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { MoreHorizontal, Eye, Archive, PhoneIncoming, Clock, Play, Pause, Radio, Mic, PhoneOff, HelpCircle, Trash2, Download, Volume2 } from "lucide-react";
 import { format } from "date-fns";
+
+function formatTime(s) {
+  if (!s || isNaN(s)) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec < 10 ? "0" : ""}${sec}`;
+}
+
+function InlinePlayer({ audioUrl }) {
+  const audioRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.load();
+    const onTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const onDurationChange = () => setDuration(audio.duration);
+    const onEnded = () => setPlaying(false);
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("durationchange", onDurationChange);
+    audio.addEventListener("ended", onEnded);
+    return () => {
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("durationchange", onDurationChange);
+      audio.removeEventListener("ended", onEnded);
+    };
+  }, [audioUrl]);
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) { audio.pause(); setPlaying(false); }
+    else { audio.play(); setPlaying(true); }
+  };
+
+  return (
+    <div className="mt-2 flex items-center gap-3 bg-muted/50 rounded-xl px-3 py-2">
+      <audio ref={audioRef} src={audioUrl} preload="metadata" />
+      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={togglePlay}>
+        {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+      </Button>
+      <span className="text-xs text-muted-foreground tabular-nums w-20 shrink-0">
+        {formatTime(currentTime)} / {formatTime(duration)}
+      </span>
+      <Slider
+        value={[duration > 0 ? (currentTime / duration) * 100 : 0]}
+        max={100}
+        step={0.1}
+        onValueChange={([v]) => {
+          if (audioRef.current && duration > 0) {
+            audioRef.current.currentTime = (v / 100) * duration;
+          }
+        }}
+        className="flex-1"
+      />
+      <Volume2 className="h-4 w-4 text-muted-foreground shrink-0" />
+      <Slider
+        value={[volume * 100]}
+        max={100}
+        step={1}
+        onValueChange={([v]) => {
+          const vol = v / 100;
+          setVolume(vol);
+          if (audioRef.current) audioRef.current.volume = vol;
+        }}
+        className="w-16 shrink-0"
+      />
+    </div>
+  );
+}
 
 const statusStyles = {
   new: "bg-primary/10 text-primary border-primary/20",
