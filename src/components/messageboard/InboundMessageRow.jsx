@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Archive, PhoneIncoming, Clock, Play, Radio, Mic, PhoneOff, HelpCircle, Trash2 } from "lucide-react";
+import { MoreHorizontal, Eye, Archive, PhoneIncoming, Clock, Play, Radio, Mic, PhoneOff, HelpCircle, Trash2, Download } from "lucide-react";
 import { format } from "date-fns";
 
 const statusStyles = {
