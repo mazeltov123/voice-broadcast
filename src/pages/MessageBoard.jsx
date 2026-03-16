@@ -200,7 +200,7 @@ export default function MessageBoard() {
         ) : (
           <div className="space-y-3">
             {filtered.map(m => (
-              <InboundMessageRow key={m.id} message={m} onStatusChange={handleStatusChange} onPlay={handlePlay} onDelete={handleDelete} />
+              <InboundMessageRow key={m.id} message={m} onStatusChange={handleStatusChange} onPlay={handlePlay} onDelete={handleDelete} onDownload={handleDownload} />
             ))}
           </div>
         )
