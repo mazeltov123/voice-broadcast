@@ -302,20 +302,47 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
     }
 
     case 'call.recording.saved': {
-      const callLegId = payload?.call_leg_id || '';
-      // Use the recording proxy for permanent playback URLs (Telnyx URLs expire after 10 minutes)
-      const proxyRecordingUrl = callLegId
-        ? `https://telnyx-webhook-proxy2.vercel.app/api/recording?leg=${callLegId}`
-        : '';
-      console.log(`[IVR] Recording saved — call_leg_id: ${callLegId}, proxy URL: ${proxyRecordingUrl}`);
-      if (proxyRecordingUrl) {
+      const recordingUrl = payload?.recording_urls?.mp3 || payload?.public_recording_urls?.mp3 || '';
+      console.log(`[IVR] Recording saved — URL: ${recordingUrl}`);
+
+      let permanentUrl = '';
+      if (recordingUrl) {
+        try {
+          // Download the MP3 while the Telnyx URL is still valid (expires in ~10 min)
+          const mp3Response = await fetch(recordingUrl, {
+            headers: recordingUrl.includes('api.telnyx.com')
+              ? { 'Authorization': `Bearer ${TELNYX_API_KEY}` }
+              : {},
+          });
+          if (mp3Response.ok) {
+            const arrayBuffer = await mp3Response.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuffer);
+            // Convert to base64 data URI for permanent storage
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) {
+              binary += String.fromCharCode(bytes[i]);
+            }
+            const base64 = btoa(binary);
+            permanentUrl = `data:audio/mpeg;base64,${base64}`;
+            console.log(`[IVR] Recording downloaded and converted (${bytes.length} bytes)`);
+          } else {
+            console.error(`[IVR] Failed to download recording: HTTP ${mp3Response.status}`);
+            permanentUrl = recordingUrl; // Fallback to original URL
+          }
+        } catch (err) {
+          console.error('[IVR] Error downloading recording:', err.message);
+          permanentUrl = recordingUrl; // Fallback to original URL
+        }
+      }
+
+      if (permanentUrl) {
         try {
           await base44.asServiceRole.entities.InboundMessage.create({
             caller_phone: callerPhone,
-            recording_url: proxyRecordingUrl,
+            recording_url: permanentUrl,
             status: 'new',
           });
-          console.log('[IVR] InboundMessage created with proxy URL');
+          console.log('[IVR] InboundMessage created with permanent recording');
         } catch (err) {
           console.error('[IVR] Error saving inbound message:', err);
         }
