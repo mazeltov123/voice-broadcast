@@ -48,6 +48,15 @@ export default function MessageBoard() {
     updateSms.mutate({ id: sms.id, data: { status } });
   };
 
+  const deleteMessage = useMutation({
+    mutationFn: (id) => base44.entities.InboundMessage.delete(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["inbound"] }),
+  });
+
+  const handleDelete = (message) => {
+    deleteMessage.mutate(message.id);
+  };
+
   const handlePlay = async (message) => {
     if (playingUrl === message.recording_url) {
       audioRef.current?.pause();
@@ -170,7 +179,7 @@ export default function MessageBoard() {
         ) : (
           <div className="space-y-3">
             {filtered.map(m => (
-              <InboundMessageRow key={m.id} message={m} onStatusChange={handleStatusChange} onPlay={handlePlay} />
+              <InboundMessageRow key={m.id} message={m} onStatusChange={handleStatusChange} onPlay={handlePlay} onDelete={handleDelete} />
             ))}
           </div>
         )
