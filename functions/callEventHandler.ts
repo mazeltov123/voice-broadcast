@@ -302,16 +302,20 @@ async function handleInbound(eventType, payload, callControlId, state, base44) {
     }
 
     case 'call.recording.saved': {
-      const recordingUrl = payload?.recording_urls?.mp3 || payload?.public_recording_urls?.mp3 || '';
-      console.log(`[IVR] Recording saved: ${recordingUrl}`);
-      if (recordingUrl) {
+      const callLegId = payload?.call_leg_id || '';
+      // Use the recording proxy for permanent playback URLs (Telnyx URLs expire after 10 minutes)
+      const proxyRecordingUrl = callLegId
+        ? `https://telnyx-webhook-proxy2.vercel.app/api/recording?leg=${callLegId}`
+        : '';
+      console.log(`[IVR] Recording saved — call_leg_id: ${callLegId}, proxy URL: ${proxyRecordingUrl}`);
+      if (proxyRecordingUrl) {
         try {
           await base44.asServiceRole.entities.InboundMessage.create({
             caller_phone: callerPhone,
-            recording_url: recordingUrl,
+            recording_url: proxyRecordingUrl,
             status: 'new',
           });
-          console.log('[IVR] InboundMessage created');
+          console.log('[IVR] InboundMessage created with proxy URL');
         } catch (err) {
           console.error('[IVR] Error saving inbound message:', err);
         }
