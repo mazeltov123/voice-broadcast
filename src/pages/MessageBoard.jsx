@@ -57,6 +57,27 @@ export default function MessageBoard() {
     deleteMessage.mutate(message.id);
   };
 
+  const handleDownload = async (message) => {
+    try {
+      const res = await fetch(`${window.location.origin}/functions/proxyRecording`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ recording_url: message.recording_url }),
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch recording");
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `voicemail-${message.caller_phone || message.id}.mp3`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(message.recording_url, "_blank");
+    }
+  };
+
   const handlePlay = async (message) => {
     if (playingUrl === message.recording_url) {
       audioRef.current?.pause();
