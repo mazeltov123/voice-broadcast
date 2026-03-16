@@ -38,8 +38,11 @@ export default function Broadcasts() {
     enabled: !!currentUser,
   });
   const { data: audioFiles = [] } = useQuery({
-    queryKey: ["audioFiles"],
-    queryFn: () => base44.entities.AudioFile.list(),
+    queryKey: ["audioFiles", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.AudioFile.list("-created_date")
+      : base44.entities.AudioFile.filter({ created_by: currentUser?.email }, "-created_date"),
+    enabled: !!currentUser,
   });
   const { data: groups = [] } = useQuery({
     queryKey: ["groups", currentUser?.email],
