@@ -91,6 +91,9 @@ export default function InboundMessageRow({ message, onStatusChange, onPlay, onD
             <DropdownMenuItem onClick={() => onStatusChange(message, "archived")}>
               <Archive className="h-3.5 w-3.5 mr-2" /> Archive
             </DropdownMenuItem>
+            <DropdownMenuItem className="text-destructive focus:text-destructive" onClick={() => onDelete(message)}>
+              <Trash2 className="h-3.5 w-3.5 mr-2" /> Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
