@@ -21,13 +21,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AudioLibrary() {
   const queryClient = useQueryClient();
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.role === "admin";
   const [search, setSearch] = useState("");
   const [uploadDialog, setUploadDialog] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const { data: audioFiles = [], isLoading } = useQuery({
-    queryKey: ["audioFiles"],
-    queryFn: () => base44.entities.AudioFile.list("-created_date"),
+    queryKey: ["audioFiles", currentUser?.email],
+    queryFn: () => isAdmin
+      ? base44.entities.AudioFile.list("-created_date")
+      : base44.entities.AudioFile.filter({ created_by: currentUser?.email }, "-created_date"),
+    enabled: !!currentUser,
   });
 
   const createAudio = useMutation({
