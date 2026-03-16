@@ -25,7 +25,7 @@ function formatDuration(seconds) {
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
-export default function InboundMessageRow({ message, onStatusChange, onPlay, onDelete }) {
+export default function InboundMessageRow({ message, onStatusChange, onPlay, onDelete, onDownload }) {
   const outcome = message.call_outcome ? outcomeConfig[message.call_outcome] : null;
   const OutcomeIcon = outcome?.icon;
 
