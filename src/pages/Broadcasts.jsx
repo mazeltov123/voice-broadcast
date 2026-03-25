@@ -30,13 +30,14 @@ export default function Broadcasts() {
   const [reportBroadcast, setReportBroadcast] = useState(null);
   const [tab, setTab] = useState("all");
 
-  const { data: broadcasts = [], isLoading } = useQuery({
+  const { data: rawBroadcasts, isLoading } = useQuery({
     queryKey: ["broadcasts", currentUser?.email],
     queryFn: () => isAdmin
       ? base44.entities.Broadcast.list("-created_date")
       : base44.entities.Broadcast.filter({ created_by: currentUser?.email }, "-created_date"),
     enabled: !!currentUser,
   });
+  const broadcasts = Array.isArray(rawBroadcasts) ? rawBroadcasts : [];
   const { data: audioFiles = [] } = useQuery({
     queryKey: ["audioFiles", currentUser?.email],
     queryFn: () => isAdmin
