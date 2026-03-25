@@ -113,7 +113,7 @@ export default function CallReportPage() {
     refetchOnWindowFocus: false,
   });
 
-  const { data: broadcasts = [] } = useQuery({
+  const { data: rawBroadcasts } = useQuery({
     queryKey: ["broadcasts", currentUser?.email],
     queryFn: () => isAdmin
       ? base44.entities.Broadcast.list()
@@ -122,6 +122,7 @@ export default function CallReportPage() {
     staleTime: 60000,
     refetchOnWindowFocus: false,
   });
+  const broadcasts = Array.isArray(rawBroadcasts) ? rawBroadcasts : [];
 
   const createMutation = useMutation({
     mutationFn: (data) => base44.entities.CallReport.create(data),
