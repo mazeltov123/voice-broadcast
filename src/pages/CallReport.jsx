@@ -301,20 +301,22 @@ export default function CallReportPage() {
             <SelectItem value="incoming">Incoming</SelectItem>
           </SelectContent>
         </Select>
-        <Input
-          type="date"
-          className="w-40"
-          value={filterDateFrom}
-          onChange={(e) => setFilterDateFrom(e.target.value)}
-          placeholder="From date"
-        />
-        <Input
-          type="date"
-          className="w-40"
-          value={filterDateTo}
-          onChange={(e) => setFilterDateTo(e.target.value)}
-          placeholder="To date"
-        />
+        <div className="flex items-center gap-1.5 border border-input rounded-md px-3 h-9 bg-background">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">From</span>
+          <input
+            type="date"
+            className="text-sm bg-transparent outline-none w-32"
+            value={filterDateFrom}
+            onChange={(e) => setFilterDateFrom(e.target.value)}
+          />
+          <span className="text-xs text-muted-foreground">–</span>
+          <input
+            type="date"
+            className="text-sm bg-transparent outline-none w-32"
+            value={filterDateTo}
+            onChange={(e) => setFilterDateTo(e.target.value)}
+          />
+        </div>
       </div>
 
       {/* Table */}
