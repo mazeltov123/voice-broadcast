@@ -43,11 +43,12 @@ export default function AdminPanel() {
     enabled: currentUser?.role === "admin",
   });
 
-  const { data: broadcasts = [] } = useQuery({
+  const { data: rawBroadcasts } = useQuery({
     queryKey: ["allBroadcasts"],
     queryFn: () => base44.entities.Broadcast.list("-created_date"),
     enabled: currentUser?.role === "admin",
   });
+  const broadcasts = Array.isArray(rawBroadcasts) ? rawBroadcasts : [];
 
   const { data: contacts = [] } = useQuery({
     queryKey: ["allContacts"],
