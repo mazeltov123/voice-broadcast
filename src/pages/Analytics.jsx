@@ -50,10 +50,11 @@ export default function Analytics() {
     queryFn: () => base44.entities.InboundMessage.list("-created_date", 500),
   });
 
-  const { data: broadcasts = [] } = useQuery({
+  const { data: rawBroadcasts } = useQuery({
     queryKey: ["broadcasts-all"],
     queryFn: () => base44.entities.Broadcast.list("-created_date", 100),
   });
+  const broadcasts = Array.isArray(rawBroadcasts) ? rawBroadcasts : [];
 
   // Build daily date range
   const today = startOfDay(new Date());
