@@ -184,10 +184,10 @@ export default function CallReportPage() {
       r.phone_number?.includes(search);
     const matchBroadcast = filterBroadcast === "all" || r.broadcast_id === filterBroadcast;
     const matchStatus = filterStatus === "all" || r.call_status === filterStatus;
-    const matchDirection = filterDirection === "all" || (r.direction || "outgoing") === filterDirection;
-    const callDate = r.called_at ? new Date(r.called_at) : null;
-    const matchDateFrom = !filterDateFrom || (callDate && callDate >= new Date(filterDateFrom));
-    const matchDateTo = !filterDateTo || (callDate && callDate <= new Date(filterDateTo + "T23:59:59"));
+    const matchDirection = filterDirection === "all" || (r.direction ?? "outgoing") === filterDirection;
+    const callDateStr = r.called_at ? r.called_at.slice(0, 10) : null;
+    const matchDateFrom = !filterDateFrom || (callDateStr && callDateStr >= filterDateFrom);
+    const matchDateTo = !filterDateTo || (callDateStr && callDateStr <= filterDateTo);
     return matchSearch && matchBroadcast && matchStatus && matchDirection && matchDateFrom && matchDateTo;
   });
 
