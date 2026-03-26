@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile: disable overscroll bounce */
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Disable text selection on buttons and icons */
+button, a, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 @layer base {
   :root {
     --background: 0 0% 98%;
