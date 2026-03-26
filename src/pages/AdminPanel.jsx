@@ -22,7 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, ShieldCheck, Radio, Phone, UserPlus, Mail, Music, Upload, CheckCircle } from "lucide-react";
+import { Users, ShieldCheck, Radio, Phone, UserPlus, Mail, Music, Upload, CheckCircle, FileText } from "lucide-react";
+import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
 
@@ -137,10 +138,18 @@ export default function AdminPanel() {
           <h1 className="text-2xl font-bold tracking-tight">Admin Panel</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage users and view all activity</p>
         </div>
-        <Button onClick={() => setInviteDialog(true)}>
-          <UserPlus className="h-4 w-4 mr-2" />
-          Invite User
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to="/AppFunctionsDoc">
+              <FileText className="h-4 w-4 mr-2" />
+              Functions Doc
+            </Link>
+          </Button>
+          <Button onClick={() => setInviteDialog(true)}>
+            <UserPlus className="h-4 w-4 mr-2" />
+            Invite User
+          </Button>
+        </div>
       </div>
 
       {/* IVR Audio Settings */}

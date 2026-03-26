@@ -4,6 +4,7 @@ import { queryClientInstance } from '@/lib/query-client'
 import { pagesConfig } from './pages.config'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
+import AppFunctionsDoc from './pages/AppFunctionsDoc';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 
@@ -57,6 +58,11 @@ const AuthenticatedApp = () => {
           }
         />
       ))}
+      <Route path="/AppFunctionsDoc" element={
+        <LayoutWrapper currentPageName="AppFunctionsDoc">
+          <AppFunctionsDoc />
+        </LayoutWrapper>
+      } />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
