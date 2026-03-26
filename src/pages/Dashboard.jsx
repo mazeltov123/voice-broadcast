@@ -10,19 +10,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Dashboard() {
   const { data: contacts = [], isLoading: loadingContacts } = useQuery({
     queryKey: ["contacts"],
-    queryFn: () => base44.entities.Contact.list(),
+    queryFn: async () => { const r = await base44.entities.Contact.list(); return Array.isArray(r) ? r : []; },
   });
   const { data: broadcasts = [], isLoading: loadingBroadcasts } = useQuery({
     queryKey: ["broadcasts"],
-    queryFn: () => base44.entities.Broadcast.list("-created_date", 20),
+    queryFn: async () => { const r = await base44.entities.Broadcast.list("-created_date", 20); return Array.isArray(r) ? r : []; },
   });
   const { data: audioFiles = [] } = useQuery({
     queryKey: ["audioFiles"],
-    queryFn: () => base44.entities.AudioFile.list(),
+    queryFn: async () => { const r = await base44.entities.AudioFile.list(); return Array.isArray(r) ? r : []; },
   });
   const { data: inbound = [] } = useQuery({
     queryKey: ["inbound"],
-    queryFn: () => base44.entities.InboundMessage.list("-created_date", 20),
+    queryFn: async () => { const r = await base44.entities.InboundMessage.list("-created_date", 20); return Array.isArray(r) ? r : []; },
   });
 
   const activeBroadcasts = broadcasts.filter(b => b.status === "in_progress").length;
