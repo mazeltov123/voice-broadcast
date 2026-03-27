@@ -182,8 +182,11 @@ export default function Contacts() {
             <FolderOpen className="h-4 w-4 mr-1.5" /> New Group
           </Button>
           <Button variant="outline" size="sm" onClick={() => {
-            const headers = ["first_name", "last_name", "phone_number", "email", "status", "notes"];
-            const rows = contacts.map(c => headers.map(h => `"${(c[h] || "").toString().replace(/"/g, '""')}"`).join(","));
+            const headers = ["first_name", "last_name", "phone_number", "email", "status", "notes", "groups"];
+            const rows = contacts.map(c => {
+              const groupNames = (c.groups || []).map(gid => groups.find(g => g.id === gid)?.name || gid).join("; ");
+              return [...headers.slice(0, -1).map(h => `"${(c[h] || "").toString().replace(/"/g, '""')}"`), `"${groupNames}"`].join(",");
+            });
             const csv = [headers.join(","), ...rows].join("\n");
             const blob = new Blob([csv], { type: "text/csv" });
             const url = URL.createObjectURL(blob);
